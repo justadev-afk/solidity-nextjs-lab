@@ -1,0 +1,52 @@
+name: solidity-nextjs-lab
+
+# OPTIONAL ALTERNATIVE. Not needed for the normal workflow.
+#
+# Foundry is used from the host installation: `forge`, `cast` and `anvil` are on
+# your PATH (see README -> Prerequisites). The default path for the local chain:
+#
+#   bun run chain              # native anvil on http://127.0.0.1:8545
+#
+# This compose file only exists in case you prefer the chain inside a container
+# (to isolate it, reset it from scratch, or work without Foundry on the host):
+#
+#   bun run chain:docker       # the same anvil, containerised, same port
+#   bun run chain:docker:down  # stops it
+#
+# There are deliberately NO `forge` or `cast` services: they are not services,
+# they are one-shot CLIs. Containerising them only adds indirection — the
+# container cannot reach the host's localhost (you would need aliases such as
+# `http://anvil:8545`), the editor loses its Solidity LSP, and `forge test
+# --debug` stops being usable.
+#
+# There are no named volumes either: mounting a volume on a path that does not
+# exist in the image makes Docker create it as root:root, and this image runs as
+# uid 1000 (foundry) -> "Permission denied (os error 13)". Anvil needs no cache,
+# so the problem simply does not arise here.
+
+services:
+  anvil:
+    image: ghcr.io/foundry-rs/foundry:v1.7.1
+    container_name: snl-anvil
+    entrypoint: ["anvil"]
+    # --host=0.0.0.0 is mandatory INSIDE the container: with 127.0.0.1 anvil
+    # would only listen on the container's own loopback and the published port
+    # would lead nowhere. The port publication below does restrict it to your
+    # loopback, so the chain is not exposed to the local network.
+    #
+    # Mining is instant by default. Add `--block-time=2` if you want to observe
+    # pending transaction states in the UI.
+    command:
+      - --host=0.0.0.0
+      - --port=8545
+      - --chain-id=31337
+      - --accounts=10
+      - --balance=10000
+    ports:
+      - "127.0.0.1:8545:8545"
+    healthcheck:
+      test: ["CMD", "cast", "chain-id", "--rpc-url", "http://127.0.0.1:8545"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 3s

@@ -1,0 +1,16 @@
+node_modules
+.next
+.turbo
+bun.lock
+coverage
+lcov.info
+
+# forge fmt owns Solidity
+*.sol
+
+# foundry generated / vendored
+packages/contracts/lib
+packages/contracts/out
+packages/contracts/cache
+packages/contracts/broadcast
+packages/contracts/foundry.lock

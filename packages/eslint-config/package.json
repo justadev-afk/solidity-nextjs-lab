@@ -1,0 +1,20 @@
+{
+  "name": "@lab/eslint-config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./base": "./base.js",
+    "./next": "./next.js"
+  },
+  "files": [
+    "base.js",
+    "next.js"
+  ],
+  "dependencies": {
+    "eslint": "^9.39.5",
+    "eslint-config-next": "16.2.12",
+    "eslint-config-prettier": "^10.1.8",
+    "typescript-eslint": "^8.65.0"
+  }
+}

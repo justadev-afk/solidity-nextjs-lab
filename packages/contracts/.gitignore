@@ -1,0 +1,11 @@
+# Forge build artefacts
+out/
+cache/
+
+# Broadcast logs (sync-deployments.ts reads them, they are not source)
+broadcast/
+
+# forge doc output
+docs/
+
+lib

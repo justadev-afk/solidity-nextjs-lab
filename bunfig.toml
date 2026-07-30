@@ -1,0 +1,5 @@
+[install]
+exact = false
+peer = true
+linkWorkspacePackages = true
+registry = "https://registry.npmjs.org"

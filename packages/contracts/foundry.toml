@@ -1,0 +1,41 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+test = "test"
+script = "script"
+solc = "0.8.30"
+evm_version = "cancun"
+optimizer = true
+optimizer_runs = 200
+via_ir = false
+verbosity = 1
+gas_reports = ["*"]
+ffi = false
+fs_permissions = [{ access = "read", path = "./out" }]
+
+[profile.ci]
+verbosity = 2
+fuzz = { runs = 1000 }
+
+[fuzz]
+runs = 256
+
+[fmt]
+line_length = 120
+tab_width = 4
+bracket_spacing = false
+int_types = "long"
+multiline_func_header = "attributes_first"
+quote_style = "double"
+number_underscore = "preserve"
+sort_imports = true
+
+[rpc_endpoints]
+# Foundry runs on the host, so the local chain is simply localhost.
+# This works for both `bun run chain` (native anvil) and `bun run chain:docker`.
+anvil = "http://127.0.0.1:8545"
+sepolia = "${SEPOLIA_RPC_URL}"
+
+[etherscan]
+sepolia = { key = "${ETHERSCAN_API_KEY}" }
