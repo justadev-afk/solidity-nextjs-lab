@@ -26,8 +26,8 @@ interface ITodoList {
     uint256 id; // per-owner id, starts at 1 and never repeats
     string content; // what has to be done
     bool completed; // flipped by `toggleTask`
-    uint64 createdAt; // `block.timestamp` when the task was created
-    uint64 updatedAt; // `block.timestamp` of the last mutation (create, update or toggle)
+    uint256 createdAt; // `block.timestamp` when the task was created
+    uint256 updatedAt; // `block.timestamp` of the last mutation (create, update or toggle)
   }
 
   /// @notice Emitted when a new task enters an owner's list.
@@ -35,21 +35,21 @@ interface ITodoList {
   /// @param id Freshly assigned per-owner id.
   /// @param content Text stored on chain.
   /// @param createdAt Block timestamp at which the task was created.
-  event TaskCreated(address indexed owner, uint256 indexed id, string content, uint64 createdAt);
+  event TaskCreated(address indexed owner, uint256 indexed id, string content, uint256 createdAt);
 
   /// @notice Emitted when the text of an existing task changes.
   /// @param owner Account the task belongs to.
   /// @param id Id of the task that was rewritten.
   /// @param content New text.
   /// @param updatedAt Block timestamp of the edit.
-  event TaskUpdated(address indexed owner, uint256 indexed id, string content, uint64 updatedAt);
+  event TaskUpdated(address indexed owner, uint256 indexed id, string content, uint256 updatedAt);
 
   /// @notice Emitted when a task is checked or unchecked.
   /// @param owner Account the task belongs to.
   /// @param id Id of the task that was toggled.
   /// @param completed Completion state *after* the toggle.
   /// @param updatedAt Block timestamp of the toggle.
-  event TaskToggled(address indexed owner, uint256 indexed id, bool completed, uint64 updatedAt);
+  event TaskToggled(address indexed owner, uint256 indexed id, bool completed, uint256 updatedAt);
 
   /// @notice Emitted when a task is removed from an owner's list.
   /// @param owner Account the task belonged to.

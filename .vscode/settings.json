@@ -13,11 +13,12 @@
   // falls back to its built-in defaults and emits 4-space indentation instead of the
   // 2 configured in packages/contracts/foundry.toml.
   "solidity.monoRepoSupport": true,
+  "terminal.integrated.gpuAcceleration": "off",
 
   "[solidity]": {
     // Pin the formatter: two extensions register one for `solidity`, and without this
     // VS Code asks which to use (or silently picks the other one).
-    "editor.defaultFormatter": "JuanBlanco.solidity",
+    "editor.defaultFormatter": "NomicFoundation.hardhat-solidity",
     // Mirrors [fmt] tab_width in packages/contracts/foundry.toml, for manual typing
     // and auto-indent. forge fmt is still what decides on save/format.
     "editor.tabSize": 2
