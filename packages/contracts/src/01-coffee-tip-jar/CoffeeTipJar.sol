@@ -77,8 +77,11 @@ contract CoffeeTipJar is ICoffeeTipJar {
     t.message = message;
     t.timestamp = block.timestamp;
 
-    _totalTipped += t.amount;
-    _tipsOf[t.from] += t.amount;
+    // We can't overload these variables with the amount we receive
+    unchecked {
+      _totalTipped += msg.value;
+      _tipsOf[msg.sender] += msg.value;
+    }
 
     emit TipReceived(msg.sender, msg.value, name, message, block.timestamp);
   }
@@ -91,7 +94,7 @@ contract CoffeeTipJar is ICoffeeTipJar {
       revert NothingToWithdraw();
     }
 
-    (bool success,) = _owner.call{value: balance}("");
+    (bool success, ) = _owner.call{value: balance}("");
 
     if (!success) {
       revert WithdrawFailed();
