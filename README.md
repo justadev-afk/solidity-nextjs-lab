@@ -733,7 +733,7 @@ are static and named, and with an empty ESM module Turbopack fails with
 - TypeScript in `strict` mode with `noUncheckedIndexedAccess`: no `any`, no `@ts-ignore`.
 - Prettier is the authority on JS/TS/CSS/MD/JSON/YAML: double quotes, semicolons, trailing commas,
   `printWidth` 100, 2-space indentation. Run `bun run format` before committing.
-- Solidity is formatted by **`forge fmt`** (4-space indentation, `line_length` 120). `*.sol` is in
+- Solidity is formatted by **`forge fmt`** (2-space indentation, `line_length` 120). `*.sol` is in
   `.prettierignore` on purpose.
 - Components that use wagmi hooks are marked `"use client"`. Server components never import wagmi.
 - Code identifiers, UI copy and documentation are all in **English**, exercise briefs included.

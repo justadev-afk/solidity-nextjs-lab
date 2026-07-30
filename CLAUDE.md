@@ -381,7 +381,7 @@ forge script  ->  packages/contracts/broadcast/DeployCoffeeTipJar.s.sol/<chainId
 - Prettier owns JS/TS/CSS/JSON/YAML/MD: double quotes, semicolons, trailing commas, `printWidth`
   100, 2-space indent, trailing newline, `proseWrap: "preserve"` for Markdown. Run `bun run format`
   before finishing (with Node 22 on PATH).
-- `forge fmt` owns Solidity (4-space indent, `line_length` 120). `*.sol` is in `.prettierignore`.
+- `forge fmt` owns Solidity (2-space indent, `line_length` 120). `*.sol` is in `.prettierignore`.
 - Comments sparse and only where non-obvious. Code identifiers and UI copy in **English**.
 - **Documentation language: English, always.** All documentation is written in **English** — every
   `README.md`, every exercise brief, every code comment, and every commit message. No Spanish

@@ -14,19 +14,19 @@ import {CoffeeTipJar} from "../../src/01-coffee-tip-jar/CoffeeTipJar.sol";
 import {Script, console2} from "forge-std/Script.sol";
 
 contract DeployCoffeeTipJar is Script {
-    uint256 internal constant DEFAULT_MINIMUM_TIP = 0.001 ether;
+  uint256 internal constant DEFAULT_MINIMUM_TIP = 0.001 ether;
 
-    function run() external returns (CoffeeTipJar jar) {
-        uint256 minimumTip = vm.envOr("MINIMUM_TIP", DEFAULT_MINIMUM_TIP);
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+  function run() external returns (CoffeeTipJar jar) {
+    uint256 minimumTip = vm.envOr("MINIMUM_TIP", DEFAULT_MINIMUM_TIP);
+    uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
 
-        vm.startBroadcast(deployerPrivateKey);
-        jar = new CoffeeTipJar(minimumTip);
-        vm.stopBroadcast();
+    vm.startBroadcast(deployerPrivateKey);
+    jar = new CoffeeTipJar(minimumTip);
+    vm.stopBroadcast();
 
-        console2.log("CoffeeTipJar deployed at:", address(jar));
-        console2.log("owner:", jar.owner());
-        console2.log("minimumTip (wei):", jar.minimumTip());
-        console2.log("Next step: run `bun run sync` to refresh packages/abi.");
-    }
+    console2.log("CoffeeTipJar deployed at:", address(jar));
+    console2.log("owner:", jar.owner());
+    console2.log("minimumTip (wei):", jar.minimumTip());
+    console2.log("Next step: run `bun run sync` to refresh packages/abi.");
+  }
 }

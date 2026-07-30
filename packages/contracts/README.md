@@ -137,7 +137,7 @@ Convention: one `NN-slug` folder per exercise, with the same name under `src/`, 
 ## What `foundry.toml` configures
 
 - `solc = "0.8.30"` pinned and `evm_version = "cancun"`; optimizer enabled with 200 runs.
-- `[fmt]`: `line_length = 120`, 4-space indentation, double quotes, `bracket_spacing = false`,
+- `[fmt]`: `line_length = 120`, 2-space indentation, double quotes, `bracket_spacing = false`,
   `int_types = "long"` (always `uint256`, never `uint`),
   `multiline_func_header = "attributes_first"` and `sort_imports = true`. Write your code in that
   style or let `bun run contracts:fmt` handle it; CI runs `forge fmt --check`.

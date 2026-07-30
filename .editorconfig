@@ -8,8 +8,11 @@ indent_size = 2
 insert_final_newline = true
 trim_trailing_whitespace = true
 
+# Solidity uses the same 2-space indentation as the rest of the repo.
+# Keep this in sync with `tab_width` in packages/contracts/foundry.toml — `forge fmt`
+# is the actual authority for *.sol, this block only helps the editor agree with it.
 [*.sol]
-indent_size = 4
+indent_size = 2
 
 [*.md]
 trim_trailing_whitespace = false
