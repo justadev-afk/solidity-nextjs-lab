@@ -7,7 +7,7 @@ export const deployments = {
     31337: "0x5fbdb2315678afecb367f032d93f642f64180aa3",
   },
   TodoList: {
-    // 31337: "0x...",
+    31337: "0xe7f1725e7734ce288f8367e1bb143e90bb3f0512",
   },
 } as const satisfies Record<string, Record<number, `0x${string}`>>;
 
