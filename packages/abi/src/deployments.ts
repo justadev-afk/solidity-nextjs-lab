@@ -9,6 +9,9 @@ export const deployments = {
   TodoList: {
     31337: "0xe7f1725e7734ce288f8367e1bb143e90bb3f0512",
   },
+  Crowdfund: {
+    // 31337: "0x...",
+  },
 } as const satisfies Record<string, Record<number, `0x${string}`>>;
 
 export type ContractName = keyof typeof deployments;

@@ -5,10 +5,18 @@ import {
   UserRejectedRequestError,
 } from "viem";
 
-import { formatEth } from "@/lib/format";
+import { formatDuration, formatEth } from "@/lib/format";
 
 function asBigint(value: unknown): bigint | undefined {
   return typeof value === "bigint" ? value : undefined;
+}
+
+/** `ICrowdfund.Status` comes back from viem as the raw `uint8`. */
+const CAMPAIGN_STATUS_LABELS = ["active", "successful", "failed"] as const;
+
+function statusLabel(value: unknown): string | undefined {
+  const index = typeof value === "number" ? value : typeof value === "bigint" ? Number(value) : -1;
+  return CAMPAIGN_STATUS_LABELS[index];
 }
 
 /**
@@ -64,6 +72,52 @@ function describeCustomError(revert: ContractFunctionRevertedError): string | un
     }
     case "OffsetOutOfRange":
       return "That page starts past the end of the list.";
+
+    // --- ICrowdfund (exercise 03) ---
+    case "InvalidGoal":
+      return "A campaign needs a goal greater than zero.";
+    case "InvalidDuration": {
+      const minDuration = asBigint(args[1]);
+      const maxDuration = asBigint(args[2]);
+      return minDuration === undefined || maxDuration === undefined
+        ? "That campaign duration is out of range."
+        : `The duration must be between ${formatDuration(minDuration)} and ${formatDuration(maxDuration)}.`;
+    }
+    case "EmptyTitle":
+      return "A campaign needs a title.";
+    case "TitleTooLong": {
+      const maxLength = asBigint(args[1]);
+      return maxLength === undefined
+        ? "The campaign title is too long."
+        : `The campaign title is too long (max ${maxLength} bytes).`;
+    }
+    case "CampaignNotFound":
+      return "That campaign does not exist.";
+    case "InvalidStatus": {
+      const expected = statusLabel(args[1]);
+      const actual = statusLabel(args[2]);
+      return expected === undefined || actual === undefined
+        ? "That action is not allowed at this point in the campaign."
+        : `This campaign is ${actual}, and that action needs it to be ${expected}.`;
+    }
+    case "ZeroContribution":
+      return "Attach some ETH to back a campaign.";
+    case "NotCampaignCreator":
+      return "Only the address that created the campaign can claim its funds.";
+    case "AlreadyClaimed":
+      return "This campaign has already paid out.";
+    case "NothingToRefund":
+      return "You have nothing to get back from this campaign.";
+    case "NotProtocolOwner":
+      return "Only the protocol owner can sweep the fees.";
+    case "NoFeesToWithdraw":
+      return "No protocol fees have accrued yet.";
+    case "TransferFailed": {
+      const amount = asBigint(args[1]);
+      return amount === undefined
+        ? "The ETH transfer failed. Does the destination address accept ETH?"
+        : `Sending ${formatEth(amount)} ETH failed. Does the destination address accept ETH?`;
+    }
 
     default:
       return undefined;

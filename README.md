@@ -12,6 +12,9 @@ and honours the behavioural contract.
   arrays, mappings, events, custom errors and fund withdrawal via `call`. 31 tests.
 - **02 — On-Chain Decentralized Todo List**: no owner and no admin, one task list per address,
   nested mappings, O(1) removal with swap-and-pop, a bulk clear and a paginated getter. 53 tests.
+- **03 — Decentralized Crowdfunding Protocol**: anyone opens time-boxed campaigns with an ETH goal,
+  a derived `Status` enum, a nested contribution ledger, full refunds on failure, a 2% protocol fee
+  on success and reentrancy-safe payouts. 67 tests.
 
 New exercises follow a fixed procedure: [`docs/adding-an-exercise.md`](docs/adding-an-exercise.md).
 
@@ -161,13 +164,22 @@ dependencies.
 │           │       │       ├── tip-form.tsx
 │           │       │       ├── tips-feed.tsx
 │           │       │       └── owner-panel.tsx
-│           │       └── 02-todo-list/
+│           │       ├── 02-todo-list/
+│           │       │   ├── page.tsx
+│           │       │   └── _components/
+│           │       │       ├── todo-list-app.tsx
+│           │       │       ├── new-task-form.tsx
+│           │       │       ├── task-board.tsx
+│           │       │       └── list-stats.tsx
+│           │       └── 03-crowdfund/
 │           │           ├── page.tsx
 │           │           └── _components/
-│           │               ├── todo-list-app.tsx
-│           │               ├── new-task-form.tsx
-│           │               ├── task-board.tsx
-│           │               └── list-stats.tsx
+│           │               ├── crowdfund-app.tsx
+│           │               ├── new-campaign-form.tsx
+│           │               ├── campaign-board.tsx
+│           │               ├── campaign-card.tsx
+│           │               ├── protocol-stats.tsx
+│           │               └── owner-panel.tsx
 │           ├── components/
 │           │   ├── layout/
 │           │   │   ├── site-header.tsx
@@ -226,20 +238,28 @@ dependencies.
     │   │   │   ├── ICoffeeTipJar.sol         # interface (already written)
     │   │   │   ├── README.md                 # exercise brief
     │   │   │   └── CoffeeTipJar.sol          # <- YOU WRITE THIS (implemented)
-    │   │   └── 02-todo-list/
-    │   │       ├── ITodoList.sol
+    │   │   ├── 02-todo-list/
+    │   │   │   ├── ITodoList.sol
+    │   │   │   ├── README.md
+    │   │   │   └── TodoList.sol              # <- YOU WRITE THIS (implemented)
+    │   │   └── 03-crowdfund/
+    │   │       ├── ICrowdfund.sol
     │   │       ├── README.md
-    │   │       └── TodoList.sol              # <- YOU WRITE THIS (exists, empty)
+    │   │       └── Crowdfund.sol             # <- YOU WRITE THIS (exists, empty)
     │   ├── test/
     │   │   ├── 01-coffee-tip-jar/
     │   │   │   └── CoffeeTipJar.t.sol
-    │   │   └── 02-todo-list/
-    │   │       └── TodoList.t.sol
+    │   │   ├── 02-todo-list/
+    │   │   │   └── TodoList.t.sol
+    │   │   └── 03-crowdfund/
+    │   │       └── Crowdfund.t.sol
     │   └── script/
     │       ├── 01-coffee-tip-jar/
     │       │   └── DeployCoffeeTipJar.s.sol
-    │       └── 02-todo-list/
-    │           └── DeployTodoList.s.sol
+    │       ├── 02-todo-list/
+    │       │   └── DeployTodoList.s.sol
+    │       └── 03-crowdfund/
+    │           └── DeployCrowdfund.s.sol
     ├── eslint-config/                        # @lab/eslint-config (base.js, next.js)
     │   ├── package.json
     │   ├── base.js
@@ -285,16 +305,16 @@ cp .env.example apps/web/.env.local
 bun run chain
 
 # 5. YOUR TURN: implement the current exercise (the file already exists, empty)
-#    packages/contracts/src/02-todo-list/TodoList.sol
-#    Full brief: packages/contracts/src/02-todo-list/README.md
-#    Interface to implement: .../ITodoList.sol
+#    packages/contracts/src/03-crowdfund/Crowdfund.sol
+#    Full brief: packages/contracts/src/03-crowdfund/README.md
+#    Interface to implement: .../ICrowdfund.sol
 
 # 6. Red -> green
 bun run contracts:build
 bun run contracts:test
 
 # 7. Deploy to anvil and sync ABI + address into @lab/abi
-bun run contracts:deploy        # or contracts:deploy:01 / contracts:deploy:02
+bun run contracts:deploy        # or contracts:deploy:01 / :02 / :03
 
 # 8. Start the frontend (another terminal, with `nvm use` already done)
 bun run dev   # http://localhost:3000
@@ -452,6 +472,7 @@ file with different purposes:
 | `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` | Optional. Empty = injected connector only.                                              |
 | `NEXT_PUBLIC_COFFEE_TIP_JAR_ADDRESS`   | Pins the exercise 01 address and bypasses the deployment registry.                      |
 | `NEXT_PUBLIC_TODO_LIST_ADDRESS`        | Same, for exercise 02.                                                                  |
+| `NEXT_PUBLIC_CROWDFUND_ADDRESS`        | Same, for exercise 03.                                                                  |
 | `PRIVATE_KEY`                          | Key that signs deployments (`vm.envUint`). Defaults to anvil account #0.                |
 | `SEPOLIA_RPC_URL`                      | Sepolia RPC for `forge script` and the `sepolia` alias in `foundry.toml`.               |
 | `ETHERSCAN_API_KEY`                    | Contract verification on Etherscan.                                                     |
@@ -487,10 +508,11 @@ They all run from the repo root with `bun run <script>`. The table mirrors `pack
 | `format:check` | `prettier --check .`. This is what CI runs.                              |
 | `clean`        | `turbo run clean && rm -rf node_modules .turbo`.                         |
 
-`bun run lint` finishes with **5 expected warnings** (0 errors): `react-hooks/set-state-in-effect`
-in `hooks/use-mounted.ts` (the hydration guard sets state inside an effect on purpose), two
-`react-hooks/incompatible-library` in `tip-form.tsx` and `new-task-form.tsx` because of
-react-hook-form's `watch()`, and two `import/no-anonymous-default-export` in
+`bun run lint` finishes with **6 expected warnings** (0 errors): `react-hooks/set-state-in-effect`
+in `hooks/use-mounted.ts` (the hydration guard sets state inside an effect on purpose), three
+`react-hooks/incompatible-library` in `tip-form.tsx`, `new-task-form.tsx` and
+`new-campaign-form.tsx` because of react-hook-form's `watch()`, and two
+`import/no-anonymous-default-export` in
 `apps/web/eslint.config.mjs` and `postcss.config.mjs`. None of them are errors and none of them
 break CI.
 
@@ -523,9 +545,10 @@ Anvil mines instantly (the default behaviour). If you want to see _pending_ stat
 | `contracts:fmt`        | `forge fmt --root packages/contracts`. `forge fmt` is the authority on Solidity, not Prettier.                                     |
 | `contracts:fmt:check`  | `forge fmt --root packages/contracts --check`.                                                                                     |
 | `contracts:snapshot`   | `forge snapshot --root packages/contracts`. Gas snapshot.                                                                          |
-| `contracts:deploy`     | `bun run contracts:deploy:01 && bun run contracts:deploy:02`. Every exercise, in order.                                            |
+| `contracts:deploy`     | `bun run contracts:deploy:01 && :02 && :03`. Every exercise, in order.                                                             |
 | `contracts:deploy:01`  | `forge script … script/01-coffee-tip-jar/DeployCoffeeTipJar.s.sol:DeployCoffeeTipJar --rpc-url anvil --broadcast && bun run sync`. |
 | `contracts:deploy:02`  | `forge script … script/02-todo-list/DeployTodoList.s.sol:DeployTodoList --rpc-url anvil --broadcast && bun run sync`.              |
+| `contracts:deploy:03`  | `forge script … script/03-crowdfund/DeployCrowdfund.s.sol:DeployCrowdfund --rpc-url anvil --broadcast && bun run sync`.            |
 
 The `anvil` alias used by `--rpc-url` comes from `[rpc_endpoints]` in
 `packages/contracts/foundry.toml` and resolves to `http://127.0.0.1:8545`, so it works the same with
@@ -617,7 +640,7 @@ The shape, for slug `NN-my-exercise` and contract `MyExercise`:
 
 `MyExercise.sol` is created as an **empty skeleton** and stays that way — writing it is the
 exercise. Entries with `status: "planned"` in `lib/exercises.ts` render as non-clickable cards;
-right now there are three: `03-crowdfund`, `04-erc20-token` and `05-nft-mint`.
+right now there are two: `04-erc20-token` and `05-nft-mint`.
 
 To close the loop: `bun run contracts:test`, `bun run contracts:deploy` (which already calls
 `bun run sync`), `bun run typecheck`, `bun run lint` and `bun run build`.
@@ -635,13 +658,13 @@ Foundry is installed in `~/.config/.foundry/bin` and the PATH is exported from `
 new terminal, or in the current one: `source ~/.zshenv`. Check with `forge --version` → `1.7.1`. If
 it is not installed: `curl -L https://foundry.paradigm.xyz | bash && foundryup`.
 
-**`bun run contracts:build` fails with `Contract TodoList should be marked as abstract`** (or
-`Member "MAX_CONTENT_LENGTH" not found`, or `Wrong argument count for function call`).
+**`bun run contracts:build` fails with `Contract Crowdfund should be marked as abstract`** (or
+`Member "FEE_BPS" not found`, or `Wrong argument count for function call`).
 This is the expected **red** state: the exercise contract exists but does not implement its whole
 interface yet, nor the constants the tests expect. The message keeps changing as you make progress;
 it turns green once the implementation is complete. Brief in
-`packages/contracts/src/02-todo-list/README.md`. Note that `forge` compiles the entire project, so
-this also stops exercise 01's suite from running even though it is finished.
+`packages/contracts/src/03-crowdfund/README.md`. Note that `forge` compiles the entire project, so
+this also stops the finished exercises' suites from running.
 
 **Port 8545 is already taken.**
 Find out who holds it with `lsof -nP -iTCP:8545 -sTCP:LISTEN`. If it is an earlier `anvil`, kill it

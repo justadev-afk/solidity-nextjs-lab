@@ -72,6 +72,40 @@ export function formatRelativeTime(seconds?: bigint): string {
   return formatTimestamp(seconds);
 }
 
+const DURATION_UNITS: readonly { seconds: bigint; label: string }[] = [
+  { seconds: 86_400n, label: "day" },
+  { seconds: 3_600n, label: "hour" },
+  { seconds: 60n, label: "minute" },
+  { seconds: 1n, label: "second" },
+];
+
+/** A span in seconds as the largest whole unit that fits, e.g. `7776000n` → `90 days`. */
+export function formatDuration(seconds?: bigint): string {
+  if (seconds === undefined) return EM_DASH;
+  if (seconds <= 0n) return "0 seconds";
+
+  for (const unit of DURATION_UNITS) {
+    if (seconds < unit.seconds) continue;
+    const count = seconds / unit.seconds;
+    return `${count.toString()} ${unit.label}${count === 1n ? "" : "s"}`;
+  }
+
+  return `${seconds.toString()} seconds`;
+}
+
+/**
+ * Time left until a unix-second deadline, coarse on purpose: a campaign countdown is settled by
+ * `block.timestamp` on chain, and rendering seconds would only pretend to a precision the
+ * next block can invalidate.
+ */
+export function formatTimeLeft(deadline?: bigint, nowMs: number = Date.now()): string {
+  if (deadline === undefined) return EM_DASH;
+
+  const remaining = deadline - BigInt(Math.floor(nowMs / 1000));
+  if (remaining <= 0n) return "ended";
+  return `${formatDuration(remaining)} left`;
+}
+
 /** `undefined` for chains without a block explorer (Anvil). */
 export function explorerTxUrl(chainId: number, hash: string): string | undefined {
   const chain: Chain | undefined = supportedChains.find((candidate) => candidate.id === chainId);

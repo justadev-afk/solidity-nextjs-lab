@@ -23,6 +23,7 @@ const publicEnvSchema = z.object({
   NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: z.string().min(1).optional(),
   NEXT_PUBLIC_COFFEE_TIP_JAR_ADDRESS: hexAddress.optional(),
   NEXT_PUBLIC_TODO_LIST_ADDRESS: hexAddress.optional(),
+  NEXT_PUBLIC_CROWDFUND_ADDRESS: hexAddress.optional(),
 });
 
 export type PublicEnv = z.infer<typeof publicEnvSchema>;
@@ -34,6 +35,7 @@ const parsed = publicEnvSchema.safeParse({
   NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: optional(process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID),
   NEXT_PUBLIC_COFFEE_TIP_JAR_ADDRESS: optional(process.env.NEXT_PUBLIC_COFFEE_TIP_JAR_ADDRESS),
   NEXT_PUBLIC_TODO_LIST_ADDRESS: optional(process.env.NEXT_PUBLIC_TODO_LIST_ADDRESS),
+  NEXT_PUBLIC_CROWDFUND_ADDRESS: optional(process.env.NEXT_PUBLIC_CROWDFUND_ADDRESS),
 });
 
 if (!parsed.success) {

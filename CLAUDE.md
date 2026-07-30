@@ -17,10 +17,11 @@ This repo is a practice lab. The whole point is that **the user** implements the
   Never read-modify-write, never reformat, never revert, never append "just the missing bit". If you
   must touch one, ask first.
   - `01-coffee-tip-jar/CoffeeTipJar.sol` — **implemented by the user**, its 31 tests pass.
-  - `02-todo-list/TodoList.sol` — **still the empty skeleton**, 53 tests waiting.
+  - `02-todo-list/TodoList.sol` — **implemented by the user**, its 53 tests pass.
+  - `03-crowdfund/Crowdfund.sol` — **still the empty skeleton**, 67 tests waiting.
 - `forge build` / `forge test` **failing is the correct starting state**, not a bug to fix. The error
-  moves as the user progresses: `Contract TodoList should be marked as abstract` while the interface
-  is unimplemented, then things like `Member "MAX_CONTENT_LENGTH" not found` or
+  moves as the user progresses: `Contract Crowdfund should be marked as abstract` while the interface
+  is unimplemented, then things like `Member "FEE_BPS" not found` or
   `Wrong argument count for function call` while it is half-written. If asked to "make it compile" or
   "make the tests pass", do **not** write the contract: point at the brief and the failing rule, and
   offer to review, hint or explain.
@@ -55,7 +56,15 @@ tip, a `Tip` struct in a dynamic array, a `tipsOf` mapping, three events, six cu
 Exercise 02 is **On-Chain Decentralized Todo List** (`TodoList is ITodoList`): no owner and no
 admin, one list per address (`mapping(address => Task[])` + an id → index mapping), five events,
 five custom errors, O(1) `deleteTask` via swap-and-pop, a bulk `clearCompleted` and a paginated
-getter. 53 tests in `test/02-todo-list/TodoList.t.sol`. **Skeleton only — the user is writing it.**
+getter. 53 tests in `test/02-todo-list/TodoList.t.sol`. **Implemented and green.**
+
+Exercise 03 is **Decentralized Crowdfunding Protocol** (`Crowdfund is ICrowdfund`): a shared,
+append-only campaign registry with **global** ids, a derived `Status` enum (`Active` / `Successful`
+/ `Failed`, computed from `block.timestamp`, `pledged` and `goal` — never stored), a nested
+`mapping(uint256 => mapping(address => uint256))` ledger, five events, thirteen custom errors, ETH
+in via `payable` and out via low-level `call`, full refunds on failure, a 2% protocol fee accrued to
+the deployer on success, and a `getCampaigns` window that clamps instead of reverting. 67 tests in
+`test/03-crowdfund/Crowdfund.t.sol`. **Skeleton only — the user is writing it.**
 
 ## 2. Tech stack
 
@@ -229,9 +238,10 @@ file must stay in sync with `package.json`.
 | `contracts:fmt`        | `forge fmt --root packages/contracts`                                                                                                                                        |
 | `contracts:fmt:check`  | `forge fmt --root packages/contracts --check`                                                                                                                                |
 | `contracts:snapshot`   | `forge snapshot --root packages/contracts`                                                                                                                                   |
-| `contracts:deploy`     | `bun run contracts:deploy:01 && bun run contracts:deploy:02` — every exercise, in order                                                                                      |
+| `contracts:deploy`     | `bun run contracts:deploy:01 && bun run contracts:deploy:02 && bun run contracts:deploy:03` — every exercise, in order                                                       |
 | `contracts:deploy:01`  | `forge script --root packages/contracts packages/contracts/script/01-coffee-tip-jar/DeployCoffeeTipJar.s.sol:DeployCoffeeTipJar --rpc-url anvil --broadcast && bun run sync` |
 | `contracts:deploy:02`  | `forge script --root packages/contracts packages/contracts/script/02-todo-list/DeployTodoList.s.sol:DeployTodoList --rpc-url anvil --broadcast && bun run sync`              |
+| `contracts:deploy:03`  | `forge script --root packages/contracts packages/contracts/script/03-crowdfund/DeployCrowdfund.s.sol:DeployCrowdfund --rpc-url anvil --broadcast && bun run sync`            |
 | `abi:sync`             | `bun run scripts/sync-abi.ts`                                                                                                                                                |
 | `deployments:sync`     | `bun run scripts/sync-deployments.ts`                                                                                                                                        |
 | `sync`                 | `bun run abi:sync && bun run deployments:sync`                                                                                                                               |
@@ -260,11 +270,12 @@ Notes that matter when running these:
   (`forge script --root packages/contracts DeployTodoList --rpc-url anvil --broadcast`) also works.
 - Everything else (`build`, `test`, `fmt`, `snapshot`, `coverage`) works fine with the relative
   `--root`.
-- `bun run lint` ends with **5 expected warnings, 0 errors**: `react-hooks/set-state-in-effect` in
-  `hooks/use-mounted.ts`, `react-hooks/incompatible-library` in `tip-form.tsx` and
-  `new-task-form.tsx` (react-hook-form's `watch()`), and `import/no-anonymous-default-export` in
-  `apps/web/eslint.config.mjs` and `postcss.config.mjs`. Do not "fix" them; every new form built on
-  react-hook-form's `watch()` adds one more, so update the count instead.
+- `bun run lint` ends with **6 expected warnings, 0 errors**: `react-hooks/set-state-in-effect` in
+  `hooks/use-mounted.ts`, `react-hooks/incompatible-library` in `tip-form.tsx`, `new-task-form.tsx`
+  and `new-campaign-form.tsx` (react-hook-form's `watch()`), and
+  `import/no-anonymous-default-export` in `apps/web/eslint.config.mjs` and `postcss.config.mjs`. Do
+  not "fix" them; every new form built on react-hook-form's `watch()` adds one more, so update the
+  count instead.
 
 Ad-hoc Foundry commands are run directly, from the repo root with `--root` or from inside
 `packages/contracts`:
@@ -287,8 +298,8 @@ cast chain-id --rpc-url http://127.0.0.1:8545
   the stub. The stub **must stay CommonJS with a `Proxy`**: some of those imports are static named
   imports and an empty ESM module makes Turbopack fail with `The export X was not found`. If a new
   specifier appears, add it to the `x402Specifiers` array.
-- `packages/abi` (`@lab/abi`) — hand-written/generated ABIs (`coffee-tip-jar.ts`, `todo-list.ts`)
-  and the `deployments` address registry. No build step; Next transpiles it via `transpilePackages`.
+- `packages/abi` (`@lab/abi`) — hand-written/generated ABIs (`coffee-tip-jar.ts`, `todo-list.ts`,
+  `crowdfund.ts`) and the `deployments` address registry. No build step; Next transpiles it via `transpilePackages`.
 - `docs/` — long-form procedures kept out of this file. Currently only
   [`adding-an-exercise.md`](docs/adding-an-exercise.md), the canonical playbook for new exercises.
 - `packages/contracts` (`@lab/contracts`) — Foundry project. Has only `test`, `fmt` and `clean`
@@ -376,7 +387,7 @@ export const exercises: Exercise[] = [
 ```
 
 `status: "planned"` entries render as non-clickable cards and must not link to a route. Currently
-planned: `03-crowdfund`, `04-erc20-token`, `05-nft-mint`.
+planned: `04-erc20-token`, `05-nft-mint`.
 
 Add `NEXT_PUBLIC_MY_EXERCISE_ADDRESS` to `apps/web/src/lib/env.ts` and `.env.example` for a manual
 address override. Env vars must be read as literal static `process.env.NEXT_PUBLIC_FOO` property
@@ -488,10 +499,10 @@ forge script  ->  packages/contracts/broadcast/DeployCoffeeTipJar.s.sol/<chainId
   `v1.7.1`, `FOUNDRY_PROFILE=ci` (1000 fuzz runs), `working-directory: packages/contracts` (so no
   `--root` involved). A guard step counts non-interface `.sol` files under
   `packages/contracts/src`; when the count is 0 it skips `forge fmt --check`, `forge build --sizes`
-  and `forge test -vvv`. The count is never 0 any more (both exercise skeletons are committed), so
+  and `forge test -vvv`. The count is never 0 any more (every exercise skeleton is committed), so
   those steps **do** run and stay red until every implementation is complete — expected while an
   exercise is in progress, and by design: `forge` compiles the whole project, so one unfinished
-  skeleton reddens the job even though exercise 01 is done.
+  skeleton reddens the job even though exercises 01 and 02 are done.
 
 ## 11. Security
 

@@ -242,7 +242,7 @@ fs.writeFileSync(process.argv[2], [
 One script per exercise, plus the aggregate:
 
 ```json
-"contracts:deploy": "bun run contracts:deploy:01 && bun run contracts:deploy:02",
+"contracts:deploy": "bun run contracts:deploy:01 && bun run contracts:deploy:02 && bun run contracts:deploy:03",
 "contracts:deploy:NN": "forge script --root packages/contracts packages/contracts/script/NN-my-exercise/DeployMyExercise.s.sol:DeployMyExercise --rpc-url anvil --broadcast && bun run sync"
 ```
 
@@ -296,12 +296,12 @@ forge test --root packages/contracts            # EXPECTED RED: skeleton does no
 Plus, in the scratchpad: the suite green against the reference implementation, on both the default
 and the `ci` profile.
 
-`bun run lint` currently ends with **5 warnings, 0 errors** — one
-`react-hooks/set-state-in-effect` in `hooks/use-mounted.ts`, two `react-hooks/incompatible-library`
-from react-hook-form's `watch()` (`tip-form.tsx`, `new-task-form.tsx`) and two
-`import/no-anonymous-default-export` in `eslint.config.mjs` / `postcss.config.mjs`. A form that uses
-`watch()` adds one more; update the count in `README.md` and `CLAUDE.md` when it changes rather than
-"fixing" the warning.
+`bun run lint` currently ends with **6 warnings, 0 errors** — one
+`react-hooks/set-state-in-effect` in `hooks/use-mounted.ts`, three
+`react-hooks/incompatible-library` from react-hook-form's `watch()` (`tip-form.tsx`,
+`new-task-form.tsx`, `new-campaign-form.tsx`) and two `import/no-anonymous-default-export` in
+`eslint.config.mjs` / `postcss.config.mjs`. A form that uses `watch()` adds one more; update the
+count in `README.md` and `CLAUDE.md` when it changes rather than "fixing" the warning.
 
 ---
 

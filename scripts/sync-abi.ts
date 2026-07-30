@@ -35,6 +35,12 @@ const targets: readonly AbiTarget[] = [
     exportName: "todoListAbi",
     typeName: "TodoListAbi",
   },
+  {
+    artifact: "Crowdfund.sol/Crowdfund.json",
+    out: "crowdfund.ts",
+    exportName: "crowdfundAbi",
+    typeName: "CrowdfundAbi",
+  },
 ];
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));

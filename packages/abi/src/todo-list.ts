@@ -5,542 +5,542 @@
 
 export const todoListAbi = [
   {
-    "type": "function",
-    "name": "MAX_CONTENT_LENGTH",
-    "inputs": [],
-    "outputs": [
+    type: "function",
+    name: "MAX_CONTENT_LENGTH",
+    inputs: [],
+    outputs: [
       {
-        "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
+        name: "",
+        type: "uint256",
+        internalType: "uint256",
+      },
     ],
-    "stateMutability": "view"
+    stateMutability: "view",
   },
   {
-    "type": "function",
-    "name": "MAX_TASKS_PER_OWNER",
-    "inputs": [],
-    "outputs": [
+    type: "function",
+    name: "MAX_TASKS_PER_OWNER",
+    inputs: [],
+    outputs: [
       {
-        "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
+        name: "",
+        type: "uint256",
+        internalType: "uint256",
+      },
     ],
-    "stateMutability": "view"
+    stateMutability: "view",
   },
   {
-    "type": "function",
-    "name": "clearCompleted",
-    "inputs": [],
-    "outputs": [
+    type: "function",
+    name: "clearCompleted",
+    inputs: [],
+    outputs: [
       {
-        "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
+        name: "",
+        type: "uint256",
+        internalType: "uint256",
+      },
     ],
-    "stateMutability": "nonpayable"
+    stateMutability: "nonpayable",
   },
   {
-    "type": "function",
-    "name": "completedCount",
-    "inputs": [
+    type: "function",
+    name: "completedCount",
+    inputs: [
       {
-        "name": "owner",
-        "type": "address",
-        "internalType": "address"
-      }
+        name: "owner",
+        type: "address",
+        internalType: "address",
+      },
     ],
-    "outputs": [
+    outputs: [
       {
-        "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
+        name: "",
+        type: "uint256",
+        internalType: "uint256",
+      },
     ],
-    "stateMutability": "view"
+    stateMutability: "view",
   },
   {
-    "type": "function",
-    "name": "createTask",
-    "inputs": [
+    type: "function",
+    name: "createTask",
+    inputs: [
       {
-        "name": "content",
-        "type": "string",
-        "internalType": "string"
-      }
+        name: "content",
+        type: "string",
+        internalType: "string",
+      },
     ],
-    "outputs": [
+    outputs: [
       {
-        "name": "id",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
+        name: "id",
+        type: "uint256",
+        internalType: "uint256",
+      },
     ],
-    "stateMutability": "nonpayable"
+    stateMutability: "nonpayable",
   },
   {
-    "type": "function",
-    "name": "deleteTask",
-    "inputs": [
+    type: "function",
+    name: "deleteTask",
+    inputs: [
       {
-        "name": "id",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
+        name: "id",
+        type: "uint256",
+        internalType: "uint256",
+      },
     ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
+    outputs: [],
+    stateMutability: "nonpayable",
   },
   {
-    "type": "function",
-    "name": "getTask",
-    "inputs": [
+    type: "function",
+    name: "getTask",
+    inputs: [
       {
-        "name": "owner",
-        "type": "address",
-        "internalType": "address"
+        name: "owner",
+        type: "address",
+        internalType: "address",
       },
       {
-        "name": "id",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
+        name: "id",
+        type: "uint256",
+        internalType: "uint256",
+      },
     ],
-    "outputs": [
+    outputs: [
       {
-        "name": "task",
-        "type": "tuple",
-        "internalType": "struct ITodoList.Task",
-        "components": [
+        name: "task",
+        type: "tuple",
+        internalType: "struct ITodoList.Task",
+        components: [
           {
-            "name": "id",
-            "type": "uint256",
-            "internalType": "uint256"
+            name: "id",
+            type: "uint256",
+            internalType: "uint256",
           },
           {
-            "name": "content",
-            "type": "string",
-            "internalType": "string"
+            name: "content",
+            type: "string",
+            internalType: "string",
           },
           {
-            "name": "completed",
-            "type": "bool",
-            "internalType": "bool"
+            name: "completed",
+            type: "bool",
+            internalType: "bool",
           },
           {
-            "name": "createdAt",
-            "type": "uint256",
-            "internalType": "uint256"
+            name: "createdAt",
+            type: "uint256",
+            internalType: "uint256",
           },
           {
-            "name": "updatedAt",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
-        ]
-      }
+            name: "updatedAt",
+            type: "uint256",
+            internalType: "uint256",
+          },
+        ],
+      },
     ],
-    "stateMutability": "view"
+    stateMutability: "view",
   },
   {
-    "type": "function",
-    "name": "getTasks",
-    "inputs": [
+    type: "function",
+    name: "getTasks",
+    inputs: [
       {
-        "name": "owner",
-        "type": "address",
-        "internalType": "address"
-      }
+        name: "owner",
+        type: "address",
+        internalType: "address",
+      },
     ],
-    "outputs": [
+    outputs: [
       {
-        "name": "",
-        "type": "tuple[]",
-        "internalType": "struct ITodoList.Task[]",
-        "components": [
+        name: "",
+        type: "tuple[]",
+        internalType: "struct ITodoList.Task[]",
+        components: [
           {
-            "name": "id",
-            "type": "uint256",
-            "internalType": "uint256"
+            name: "id",
+            type: "uint256",
+            internalType: "uint256",
           },
           {
-            "name": "content",
-            "type": "string",
-            "internalType": "string"
+            name: "content",
+            type: "string",
+            internalType: "string",
           },
           {
-            "name": "completed",
-            "type": "bool",
-            "internalType": "bool"
+            name: "completed",
+            type: "bool",
+            internalType: "bool",
           },
           {
-            "name": "createdAt",
-            "type": "uint256",
-            "internalType": "uint256"
+            name: "createdAt",
+            type: "uint256",
+            internalType: "uint256",
           },
           {
-            "name": "updatedAt",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
-        ]
-      }
+            name: "updatedAt",
+            type: "uint256",
+            internalType: "uint256",
+          },
+        ],
+      },
     ],
-    "stateMutability": "view"
+    stateMutability: "view",
   },
   {
-    "type": "function",
-    "name": "getTasksPaged",
-    "inputs": [
+    type: "function",
+    name: "getTasksPaged",
+    inputs: [
       {
-        "name": "owner",
-        "type": "address",
-        "internalType": "address"
+        name: "owner",
+        type: "address",
+        internalType: "address",
       },
       {
-        "name": "offset",
-        "type": "uint256",
-        "internalType": "uint256"
+        name: "offset",
+        type: "uint256",
+        internalType: "uint256",
       },
       {
-        "name": "limit",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
+        name: "limit",
+        type: "uint256",
+        internalType: "uint256",
+      },
     ],
-    "outputs": [
+    outputs: [
       {
-        "name": "",
-        "type": "tuple[]",
-        "internalType": "struct ITodoList.Task[]",
-        "components": [
+        name: "",
+        type: "tuple[]",
+        internalType: "struct ITodoList.Task[]",
+        components: [
           {
-            "name": "id",
-            "type": "uint256",
-            "internalType": "uint256"
+            name: "id",
+            type: "uint256",
+            internalType: "uint256",
           },
           {
-            "name": "content",
-            "type": "string",
-            "internalType": "string"
+            name: "content",
+            type: "string",
+            internalType: "string",
           },
           {
-            "name": "completed",
-            "type": "bool",
-            "internalType": "bool"
+            name: "completed",
+            type: "bool",
+            internalType: "bool",
           },
           {
-            "name": "createdAt",
-            "type": "uint256",
-            "internalType": "uint256"
+            name: "createdAt",
+            type: "uint256",
+            internalType: "uint256",
           },
           {
-            "name": "updatedAt",
-            "type": "uint256",
-            "internalType": "uint256"
-          }
-        ]
-      }
+            name: "updatedAt",
+            type: "uint256",
+            internalType: "uint256",
+          },
+        ],
+      },
     ],
-    "stateMutability": "view"
+    stateMutability: "view",
   },
   {
-    "type": "function",
-    "name": "hasTask",
-    "inputs": [
+    type: "function",
+    name: "hasTask",
+    inputs: [
       {
-        "name": "owner",
-        "type": "address",
-        "internalType": "address"
+        name: "owner",
+        type: "address",
+        internalType: "address",
       },
       {
-        "name": "id",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
+        name: "id",
+        type: "uint256",
+        internalType: "uint256",
+      },
     ],
-    "outputs": [
+    outputs: [
       {
-        "name": "",
-        "type": "bool",
-        "internalType": "bool"
-      }
+        name: "",
+        type: "bool",
+        internalType: "bool",
+      },
     ],
-    "stateMutability": "view"
+    stateMutability: "view",
   },
   {
-    "type": "function",
-    "name": "nextTaskId",
-    "inputs": [
+    type: "function",
+    name: "nextTaskId",
+    inputs: [
       {
-        "name": "owner",
-        "type": "address",
-        "internalType": "address"
-      }
+        name: "owner",
+        type: "address",
+        internalType: "address",
+      },
     ],
-    "outputs": [
+    outputs: [
       {
-        "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
+        name: "",
+        type: "uint256",
+        internalType: "uint256",
+      },
     ],
-    "stateMutability": "view"
+    stateMutability: "view",
   },
   {
-    "type": "function",
-    "name": "taskCount",
-    "inputs": [
+    type: "function",
+    name: "taskCount",
+    inputs: [
       {
-        "name": "owner",
-        "type": "address",
-        "internalType": "address"
-      }
+        name: "owner",
+        type: "address",
+        internalType: "address",
+      },
     ],
-    "outputs": [
+    outputs: [
       {
-        "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
+        name: "",
+        type: "uint256",
+        internalType: "uint256",
+      },
     ],
-    "stateMutability": "view"
+    stateMutability: "view",
   },
   {
-    "type": "function",
-    "name": "toggleTask",
-    "inputs": [
+    type: "function",
+    name: "toggleTask",
+    inputs: [
       {
-        "name": "id",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
+        name: "id",
+        type: "uint256",
+        internalType: "uint256",
+      },
     ],
-    "outputs": [
+    outputs: [
       {
-        "name": "completed",
-        "type": "bool",
-        "internalType": "bool"
-      }
+        name: "completed",
+        type: "bool",
+        internalType: "bool",
+      },
     ],
-    "stateMutability": "nonpayable"
+    stateMutability: "nonpayable",
   },
   {
-    "type": "function",
-    "name": "updateTask",
-    "inputs": [
+    type: "function",
+    name: "updateTask",
+    inputs: [
       {
-        "name": "id",
-        "type": "uint256",
-        "internalType": "uint256"
+        name: "id",
+        type: "uint256",
+        internalType: "uint256",
       },
       {
-        "name": "content",
-        "type": "string",
-        "internalType": "string"
-      }
+        name: "content",
+        type: "string",
+        internalType: "string",
+      },
     ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
+    outputs: [],
+    stateMutability: "nonpayable",
   },
   {
-    "type": "event",
-    "name": "CompletedCleared",
-    "inputs": [
+    type: "event",
+    name: "CompletedCleared",
+    inputs: [
       {
-        "name": "owner",
-        "type": "address",
-        "indexed": true,
-        "internalType": "address"
+        name: "owner",
+        type: "address",
+        indexed: true,
+        internalType: "address",
       },
       {
-        "name": "removed",
-        "type": "uint256",
-        "indexed": false,
-        "internalType": "uint256"
-      }
+        name: "removed",
+        type: "uint256",
+        indexed: false,
+        internalType: "uint256",
+      },
     ],
-    "anonymous": false
+    anonymous: false,
   },
   {
-    "type": "event",
-    "name": "TaskCreated",
-    "inputs": [
+    type: "event",
+    name: "TaskCreated",
+    inputs: [
       {
-        "name": "owner",
-        "type": "address",
-        "indexed": true,
-        "internalType": "address"
+        name: "owner",
+        type: "address",
+        indexed: true,
+        internalType: "address",
       },
       {
-        "name": "id",
-        "type": "uint256",
-        "indexed": true,
-        "internalType": "uint256"
+        name: "id",
+        type: "uint256",
+        indexed: true,
+        internalType: "uint256",
       },
       {
-        "name": "content",
-        "type": "string",
-        "indexed": false,
-        "internalType": "string"
+        name: "content",
+        type: "string",
+        indexed: false,
+        internalType: "string",
       },
       {
-        "name": "createdAt",
-        "type": "uint256",
-        "indexed": false,
-        "internalType": "uint256"
-      }
+        name: "createdAt",
+        type: "uint256",
+        indexed: false,
+        internalType: "uint256",
+      },
     ],
-    "anonymous": false
+    anonymous: false,
   },
   {
-    "type": "event",
-    "name": "TaskDeleted",
-    "inputs": [
+    type: "event",
+    name: "TaskDeleted",
+    inputs: [
       {
-        "name": "owner",
-        "type": "address",
-        "indexed": true,
-        "internalType": "address"
+        name: "owner",
+        type: "address",
+        indexed: true,
+        internalType: "address",
       },
       {
-        "name": "id",
-        "type": "uint256",
-        "indexed": true,
-        "internalType": "uint256"
-      }
+        name: "id",
+        type: "uint256",
+        indexed: true,
+        internalType: "uint256",
+      },
     ],
-    "anonymous": false
+    anonymous: false,
   },
   {
-    "type": "event",
-    "name": "TaskToggled",
-    "inputs": [
+    type: "event",
+    name: "TaskToggled",
+    inputs: [
       {
-        "name": "owner",
-        "type": "address",
-        "indexed": true,
-        "internalType": "address"
+        name: "owner",
+        type: "address",
+        indexed: true,
+        internalType: "address",
       },
       {
-        "name": "id",
-        "type": "uint256",
-        "indexed": true,
-        "internalType": "uint256"
+        name: "id",
+        type: "uint256",
+        indexed: true,
+        internalType: "uint256",
       },
       {
-        "name": "completed",
-        "type": "bool",
-        "indexed": false,
-        "internalType": "bool"
+        name: "completed",
+        type: "bool",
+        indexed: false,
+        internalType: "bool",
       },
       {
-        "name": "updatedAt",
-        "type": "uint256",
-        "indexed": false,
-        "internalType": "uint256"
-      }
+        name: "updatedAt",
+        type: "uint256",
+        indexed: false,
+        internalType: "uint256",
+      },
     ],
-    "anonymous": false
+    anonymous: false,
   },
   {
-    "type": "event",
-    "name": "TaskUpdated",
-    "inputs": [
+    type: "event",
+    name: "TaskUpdated",
+    inputs: [
       {
-        "name": "owner",
-        "type": "address",
-        "indexed": true,
-        "internalType": "address"
+        name: "owner",
+        type: "address",
+        indexed: true,
+        internalType: "address",
       },
       {
-        "name": "id",
-        "type": "uint256",
-        "indexed": true,
-        "internalType": "uint256"
+        name: "id",
+        type: "uint256",
+        indexed: true,
+        internalType: "uint256",
       },
       {
-        "name": "content",
-        "type": "string",
-        "indexed": false,
-        "internalType": "string"
+        name: "content",
+        type: "string",
+        indexed: false,
+        internalType: "string",
       },
       {
-        "name": "updatedAt",
-        "type": "uint256",
-        "indexed": false,
-        "internalType": "uint256"
-      }
+        name: "updatedAt",
+        type: "uint256",
+        indexed: false,
+        internalType: "uint256",
+      },
     ],
-    "anonymous": false
+    anonymous: false,
   },
   {
-    "type": "error",
-    "name": "ContentTooLong",
-    "inputs": [
+    type: "error",
+    name: "ContentTooLong",
+    inputs: [
       {
-        "name": "length",
-        "type": "uint256",
-        "internalType": "uint256"
+        name: "length",
+        type: "uint256",
+        internalType: "uint256",
       },
       {
-        "name": "maxLength",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ]
+        name: "maxLength",
+        type: "uint256",
+        internalType: "uint256",
+      },
+    ],
   },
   {
-    "type": "error",
-    "name": "EmptyContent",
-    "inputs": []
+    type: "error",
+    name: "EmptyContent",
+    inputs: [],
   },
   {
-    "type": "error",
-    "name": "OffsetOutOfRange",
-    "inputs": [
+    type: "error",
+    name: "OffsetOutOfRange",
+    inputs: [
       {
-        "name": "offset",
-        "type": "uint256",
-        "internalType": "uint256"
+        name: "offset",
+        type: "uint256",
+        internalType: "uint256",
       },
       {
-        "name": "taskCount",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ]
+        name: "taskCount",
+        type: "uint256",
+        internalType: "uint256",
+      },
+    ],
   },
   {
-    "type": "error",
-    "name": "TaskLimitReached",
-    "inputs": [
+    type: "error",
+    name: "TaskLimitReached",
+    inputs: [
       {
-        "name": "limit",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ]
+        name: "limit",
+        type: "uint256",
+        internalType: "uint256",
+      },
+    ],
   },
   {
-    "type": "error",
-    "name": "TaskNotFound",
-    "inputs": [
+    type: "error",
+    name: "TaskNotFound",
+    inputs: [
       {
-        "name": "owner",
-        "type": "address",
-        "internalType": "address"
+        name: "owner",
+        type: "address",
+        internalType: "address",
       },
       {
-        "name": "id",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ]
-  }
+        name: "id",
+        type: "uint256",
+        internalType: "uint256",
+      },
+    ],
+  },
 ] as const;
 
 export type TodoListAbi = typeof todoListAbi;

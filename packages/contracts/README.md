@@ -128,15 +128,23 @@ packages/contracts
 ├── src/02-todo-list/
 │   ├── ITodoList.sol
 │   ├── README.md
-│   └── TodoList.sol                      # <-- exists but empty, YOU implement it
+│   └── TodoList.sol                      # <-- YOU implement it (done)
+├── src/03-crowdfund/
+│   ├── ICrowdfund.sol
+│   ├── README.md
+│   └── Crowdfund.sol                     # <-- exists but empty, YOU implement it
 ├── test/01-coffee-tip-jar/
 │   └── CoffeeTipJar.t.sol                # full suite (31 tests), already there
 ├── test/02-todo-list/
 │   └── TodoList.t.sol                    # full suite (53 tests), already there
+├── test/03-crowdfund/
+│   └── Crowdfund.t.sol                   # full suite (67 tests), already there
 ├── script/01-coffee-tip-jar/
 │   └── DeployCoffeeTipJar.s.sol          # deployment, already there
-└── script/02-todo-list/
-    └── DeployTodoList.s.sol
+├── script/02-todo-list/
+│   └── DeployTodoList.s.sol
+└── script/03-crowdfund/
+    └── DeployCrowdfund.s.sol
 ```
 
 Convention: one `NN-slug` folder per exercise, with the same name under `src/`, `test/` and
@@ -196,7 +204,7 @@ Requirements and caveats:
 
 ## Exercise workflow
 
-1. Read the brief: `src/NN-slug/README.md` (currently `src/02-todo-list/README.md`).
+1. Read the brief: `src/NN-slug/README.md` (currently `src/03-crowdfund/README.md`).
 2. Write your implementation in `src/NN-slug/<Exercise>.sol` (the file already exists, empty, with
    SPDX + pragma + the interface import).
 3. Run `bun run contracts:build` and `bun run contracts:test` until everything passes.
@@ -210,8 +218,8 @@ Requirements and caveats:
 - **`forge: command not found`**: your PATH is missing `~/.config/.foundry/bin`. Open a new terminal
   or run `source ~/.zshenv`. If Foundry is not installed:
   `curl -L https://foundry.paradigm.xyz | bash && foundryup`.
-- **`forge build` fails with `Contract TodoList should be marked as abstract`** (or
-  `Member "MAX_CONTENT_LENGTH" not found`, or `Wrong argument count for function call`): that is
+- **`forge build` fails with `Contract Crowdfund should be marked as abstract`** (or
+  `Member "FEE_BPS" not found`, or `Wrong argument count for function call`): that is
   expected until the implementation is complete. The test suite and the deploy script import the
   contract on purpose (red → green), and the message keeps changing depending on what is still
   missing. Because compilation is project-wide, this also blocks the suites of exercises that are
