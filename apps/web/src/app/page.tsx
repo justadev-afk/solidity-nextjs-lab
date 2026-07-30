@@ -44,8 +44,8 @@ const quickStart = [
     hint: "Runs Anvil on port 8545 (chain id 31337). Keep it in its own terminal.",
   },
   {
-    command: "packages/contracts/src/01-coffee-tip-jar/CoffeeTipJar.sol",
-    hint: "Write this contract yourself — the interface, brief and tests are already there.",
+    command: "packages/contracts/src/02-todo-list/TodoList.sol",
+    hint: "Write the current exercise yourself — the interface, brief and tests are already there.",
   },
   {
     command: "bun run contracts:test",
@@ -176,8 +176,8 @@ export default function HomePage() {
       <section id="quick-start" className="mt-16 scroll-mt-20">
         <h2 className="text-2xl font-semibold tracking-tight">Quick start</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          Node 22 (<code className="font-mono">nvm use</code>), Bun and Docker are the only host
-          requirements — Foundry runs inside the container.
+          Node 22 (<code className="font-mono">nvm use</code>), Bun and Foundry are the host
+          requirements. Docker is optional and only runs the local chain.
         </p>
 
         <ol className="mt-6 space-y-3">

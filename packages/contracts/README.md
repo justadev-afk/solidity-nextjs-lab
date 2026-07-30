@@ -124,15 +124,27 @@ packages/contracts
 ├── src/01-coffee-tip-jar/
 │   ├── ICoffeeTipJar.sol                 # interface + NatSpec (already there)
 │   ├── README.md                         # the exercise brief
-│   └── CoffeeTipJar.sol                  # <-- exists but empty, YOU implement it
+│   └── CoffeeTipJar.sol                  # <-- YOU implement it (done)
+├── src/02-todo-list/
+│   ├── ITodoList.sol
+│   ├── README.md
+│   └── TodoList.sol                      # <-- exists but empty, YOU implement it
 ├── test/01-coffee-tip-jar/
 │   └── CoffeeTipJar.t.sol                # full suite (31 tests), already there
-└── script/01-coffee-tip-jar/
-    └── DeployCoffeeTipJar.s.sol          # deployment, already there
+├── test/02-todo-list/
+│   └── TodoList.t.sol                    # full suite (53 tests), already there
+├── script/01-coffee-tip-jar/
+│   └── DeployCoffeeTipJar.s.sol          # deployment, already there
+└── script/02-todo-list/
+    └── DeployTodoList.s.sol
 ```
 
 Convention: one `NN-slug` folder per exercise, with the same name under `src/`, `test/` and
-`script/`.
+`script/`. Adding one follows [`docs/adding-an-exercise.md`](../../docs/adding-an-exercise.md).
+
+`forge` compiles the whole project, so while any exercise is still an empty skeleton, `forge build`,
+`forge test` and `forge script` are red for **every** exercise — including the ones already
+finished. That is the lab's normal state, not a broken checkout.
 
 ## What `foundry.toml` configures
 
@@ -184,25 +196,26 @@ Requirements and caveats:
 
 ## Exercise workflow
 
-1. Read the brief: `src/01-coffee-tip-jar/README.md`.
-2. Write your implementation in `src/01-coffee-tip-jar/CoffeeTipJar.sol` (the file already exists,
-   empty, with SPDX + pragma + the interface import).
+1. Read the brief: `src/NN-slug/README.md` (currently `src/02-todo-list/README.md`).
+2. Write your implementation in `src/NN-slug/<Exercise>.sol` (the file already exists, empty, with
+   SPDX + pragma + the interface import).
 3. Run `bun run contracts:build` and `bun run contracts:test` until everything passes.
-4. Run `bun run chain` in another terminal, then `bun run contracts:deploy`. The deployment leaves
+4. Run `bun run chain` in another terminal, then `bun run contracts:deploy:NN`. The deployment leaves
    its record in `broadcast/`, and `bun run sync` copies the ABI and the address to `packages/abi`.
 5. Run `bun run dev` and try the contract from the UI at
-   `http://localhost:3000/exercises/01-coffee-tip-jar`.
+   `http://localhost:3000/exercises/NN-slug`.
 
 ## Common problems
 
 - **`forge: command not found`**: your PATH is missing `~/.config/.foundry/bin`. Open a new terminal
   or run `source ~/.zshenv`. If Foundry is not installed:
   `curl -L https://foundry.paradigm.xyz | bash && foundryup`.
-- **`forge build` fails with `Contract CoffeeTipJar should be marked as abstract`** (or
-  `Member "MAX_NAME_LENGTH" not found`, or `Wrong argument count for function call`): that is
+- **`forge build` fails with `Contract TodoList should be marked as abstract`** (or
+  `Member "MAX_CONTENT_LENGTH" not found`, or `Wrong argument count for function call`): that is
   expected until the implementation is complete. The test suite and the deploy script import the
   contract on purpose (red → green), and the message keeps changing depending on what is still
-  missing.
+  missing. Because compilation is project-wide, this also blocks the suites of exercises that are
+  already finished.
 - **The first build takes ages**: it is downloading solc `0.8.30` into
   `~/.config/.foundry/versions`. It only happens once.
 - **`bun run contracts:deps` fails with `Library directory is not relative to the repository root`**:

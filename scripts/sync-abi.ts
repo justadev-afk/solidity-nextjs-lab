@@ -29,6 +29,12 @@ const targets: readonly AbiTarget[] = [
     exportName: "coffeeTipJarAbi",
     typeName: "CoffeeTipJarAbi",
   },
+  {
+    artifact: "TodoList.sol/TodoList.json",
+    out: "todo-list.ts",
+    exportName: "todoListAbi",
+    typeName: "TodoListAbi",
+  },
 ];
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));

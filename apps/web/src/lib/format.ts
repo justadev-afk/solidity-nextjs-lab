@@ -32,6 +32,17 @@ export function formatEthWithUnit(wei?: bigint): string {
   return `${formatEth(wei)} ETH`;
 }
 
+const textEncoder = new TextEncoder();
+
+/**
+ * UTF-8 byte length of a string — what Solidity's `bytes(s).length` actually measures.
+ * A form that counts `String.length` instead will happily submit transactions that revert on a
+ * byte limit, because one emoji is a single JS character but four bytes on chain.
+ */
+export function byteLength(value: string): number {
+  return textEncoder.encode(value).length;
+}
+
 export function formatTimestamp(seconds?: bigint): string {
   if (seconds === undefined) return EM_DASH;
   const date = new Date(Number(seconds) * 1000);

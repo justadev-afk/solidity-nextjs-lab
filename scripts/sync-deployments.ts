@@ -24,6 +24,7 @@ type DeploymentTarget = {
 
 const targets: readonly DeploymentTarget[] = [
   { contractName: "CoffeeTipJar", script: "DeployCoffeeTipJar.s.sol" },
+  { contractName: "TodoList", script: "DeployTodoList.s.sol" },
 ];
 
 /** Anvil and Sepolia. */

@@ -11,7 +11,11 @@ function asBigint(value: unknown): bigint | undefined {
   return typeof value === "bigint" ? value : undefined;
 }
 
-/** Maps the custom errors declared by `ICoffeeTipJar` to human copy. */
+/**
+ * Maps the custom errors declared by the exercise interfaces to human copy. One switch for the
+ * whole lab: the error names are unique across `ICoffeeTipJar` and `ITodoList`, and a revert only
+ * ever decodes against the ABI of the contract that was called.
+ */
 function describeCustomError(revert: ContractFunctionRevertedError): string | undefined {
   const args = revert.data?.args ?? [];
 
@@ -40,6 +44,27 @@ function describeCustomError(revert: ContractFunctionRevertedError): string | un
         ? "Message is too long."
         : `Message is too long (max ${maxLength} bytes).`;
     }
+
+    // --- ITodoList (exercise 02) ---
+    case "EmptyContent":
+      return "A task needs some text.";
+    case "ContentTooLong": {
+      const maxLength = asBigint(args[1]);
+      return maxLength === undefined
+        ? "The task text is too long."
+        : `The task text is too long (max ${maxLength} bytes).`;
+    }
+    case "TaskNotFound":
+      return "That task is not in your list — it may have been deleted already.";
+    case "TaskLimitReached": {
+      const limit = asBigint(args[0]);
+      return limit === undefined
+        ? "You have reached the maximum number of tasks."
+        : `You already have the maximum of ${limit} tasks. Delete one first.`;
+    }
+    case "OffsetOutOfRange":
+      return "That page starts past the end of the list.";
+
     default:
       return undefined;
   }

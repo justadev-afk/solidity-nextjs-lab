@@ -11,17 +11,22 @@ This repo is a practice lab. The whole point is that **the user** implements the
 - **Never create, fill in, complete or "fix" `packages/contracts/src/**/<Exercise>.sol`** — the
   concrete implementation — unless the user explicitly asks for it in that same turn ("write it
   yourself", "give me the solution", "implement it for me").
-- `packages/contracts/src/01-coffee-tip-jar/CoffeeTipJar.sol` **already exists**, pre-created as an
-  empty skeleton — SPDX, `pragma`, the `ICoffeeTipJar` import and an empty
-  `contract CoffeeTipJar is ICoffeeTipJar {}` body — so the user can fill it in. Treat it as **the
-  user's working file**: assume they are editing it right now. Never read-modify-write it, never
-  reformat it, never revert it, never append "just the missing bit". If you must touch it, ask first.
+- Every `src/NN-slug/<Exercise>.sol` is pre-created as an **empty skeleton** — SPDX, `pragma`, the
+  interface import and an empty `contract Exercise is IExercise {}` body — so the user can fill it
+  in. Treat those files as **the user's working copies**: assume they are editing one right now.
+  Never read-modify-write, never reformat, never revert, never append "just the missing bit". If you
+  must touch one, ask first.
+  - `01-coffee-tip-jar/CoffeeTipJar.sol` — **implemented by the user**, its 31 tests pass.
+  - `02-todo-list/TodoList.sol` — **still the empty skeleton**, 53 tests waiting.
 - `forge build` / `forge test` **failing is the correct starting state**, not a bug to fix. The error
-  moves as the user progresses: `Contract CoffeeTipJar should be marked as abstract` while the
-  interface is unimplemented, then things like `Member "MAX_NAME_LENGTH" not found` or
+  moves as the user progresses: `Contract TodoList should be marked as abstract` while the interface
+  is unimplemented, then things like `Member "MAX_CONTENT_LENGTH" not found` or
   `Wrong argument count for function call` while it is half-written. If asked to "make it compile" or
   "make the tests pass", do **not** write the contract: point at the brief and the failing rule, and
   offer to review, hint or explain.
+- **Foundry compiles the whole project**, so an unimplemented skeleton makes `forge build`,
+  `forge test`, `forge script` and `contracts:deploy` red for **every** exercise, including ones
+  that were green before. That is not a regression in the finished exercises.
 - Fair game without asking: the interface (`I<Exercise>.sol`), the exercise brief README, the Foundry
   tests, the deploy script, `@lab/abi`, the whole `apps/web` frontend, tooling, CI, docs.
 - Also encouraged: reviewing the user's Solidity, explaining a revert, adding a failing test that
@@ -35,13 +40,22 @@ Each one ships with everything except the implementation, so the loop is red →
 1. Read the brief (`packages/contracts/src/NN-slug/README.md`) and the interface.
 2. The user writes the contract.
 3. `bun run contracts:test` until green.
-4. `bun run contracts:deploy` — deploys to local anvil and syncs ABI + address into `@lab/abi`.
+4. `bun run contracts:deploy:NN` — deploys to local anvil and syncs ABI + address into `@lab/abi`.
 5. Play with it in the Next.js UI at `/exercises/NN-slug`.
+
+**Adding a new exercise has its own playbook: [`docs/adding-an-exercise.md`](docs/adding-an-exercise.md).**
+It is the canonical checklist — number, layout, naming, how to verify a test suite whose
+implementation does not exist yet, and the definition of done. Section 7 below is the short version.
 
 Exercise 01 is **Coffee Tip Jar** (`CoffeeTipJar is ICoffeeTipJar`): owner, configurable minimum
 tip, a `Tip` struct in a dynamic array, a `tipsOf` mapping, three events, six custom errors, and
 `withdraw()` using a low-level `call` with state-then-call ordering. 31 tests in
-`test/01-coffee-tip-jar/CoffeeTipJar.t.sol`.
+`test/01-coffee-tip-jar/CoffeeTipJar.t.sol`. **Implemented and green.**
+
+Exercise 02 is **On-Chain Decentralized Todo List** (`TodoList is ITodoList`): no owner and no
+admin, one list per address (`mapping(address => Task[])` + an id → index mapping), five events,
+five custom errors, O(1) `deleteTask` via swap-and-pop, a bulk `clearCompleted` and a paginated
+getter. 53 tests in `test/02-todo-list/TodoList.t.sol`. **Skeleton only — the user is writing it.**
 
 ## 2. Tech stack
 
@@ -114,7 +128,10 @@ Reproduced verbatim from the user's original request:
   `apps/web/.env.local` is read by Next.js. `docker-compose.yml` interpolates nothing any more.
 - `MINIMUM_TIP` (constructor arg, `vm.envOr`) is **not** in `.env.example`; it has to be added by
   hand or passed inline.
-- The repo is a git repository with **no commits yet**. Do not commit or push unless asked.
+- The repo has history and works directly on **`main`**, tracking
+  `origin/main` (`git@github.com:justadev-afk/solidity-nextjs-lab.git`). Do not commit or push unless
+  asked, and **never push** just because a commit was requested. The one standing exception to "do
+  not commit" is the exercise boilerplate commit — see [§7.1](#71-the-boilerplate-commit).
 
 ## 4. Locked version matrix
 
@@ -190,32 +207,34 @@ Solidity / Foundry:
 All from the repo root, via `bun run <script>`. These names are canonical — `README.md` and this
 file must stay in sync with `package.json`.
 
-| Script                 | Underlying command                                                                                                                                        |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `setup`                | `bun install && bun run contracts:deps`                                                                                                                   |
-| `dev`                  | `turbo run dev`                                                                                                                                           |
-| `build`                | `turbo run build`                                                                                                                                         |
-| `lint`                 | `turbo run lint`                                                                                                                                          |
-| `lint:fix`             | `turbo run lint -- --fix`                                                                                                                                 |
-| `typecheck`            | `turbo run typecheck`                                                                                                                                     |
-| `format`               | `prettier --write .`                                                                                                                                      |
-| `format:check`         | `prettier --check .`                                                                                                                                      |
-| `clean`                | `turbo run clean && rm -rf node_modules .turbo`                                                                                                           |
-| `chain`                | `anvil --host 127.0.0.1 --port 8545 --chain-id 31337 --accounts 10 --balance 10000`                                                                       |
-| `chain:docker`         | `docker compose up anvil`                                                                                                                                 |
-| `chain:docker:down`    | `docker compose down`                                                                                                                                     |
-| `contracts:deps`       | `forge install --root packages/contracts foundry-rs/forge-std@v1.16.2`                                                                                    |
-| `contracts:build`      | `forge build --root packages/contracts`                                                                                                                   |
-| `contracts:test`       | `forge test --root packages/contracts -vvv`                                                                                                               |
-| `contracts:test:watch` | `forge test --root packages/contracts --watch`                                                                                                            |
-| `contracts:coverage`   | `forge coverage --root packages/contracts`                                                                                                                |
-| `contracts:fmt`        | `forge fmt --root packages/contracts`                                                                                                                     |
-| `contracts:fmt:check`  | `forge fmt --root packages/contracts --check`                                                                                                             |
-| `contracts:snapshot`   | `forge snapshot --root packages/contracts`                                                                                                                |
-| `contracts:deploy`     | `forge script --root packages/contracts script/01-coffee-tip-jar/DeployCoffeeTipJar.s.sol:DeployCoffeeTipJar --rpc-url anvil --broadcast && bun run sync` |
-| `abi:sync`             | `bun run scripts/sync-abi.ts`                                                                                                                             |
-| `deployments:sync`     | `bun run scripts/sync-deployments.ts`                                                                                                                     |
-| `sync`                 | `bun run abi:sync && bun run deployments:sync`                                                                                                            |
+| Script                 | Underlying command                                                                                                                                                           |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `setup`                | `bun install && bun run contracts:deps`                                                                                                                                      |
+| `dev`                  | `turbo run dev`                                                                                                                                                              |
+| `build`                | `turbo run build`                                                                                                                                                            |
+| `lint`                 | `turbo run lint`                                                                                                                                                             |
+| `lint:fix`             | `turbo run lint -- --fix`                                                                                                                                                    |
+| `typecheck`            | `turbo run typecheck`                                                                                                                                                        |
+| `format`               | `prettier --write .`                                                                                                                                                         |
+| `format:check`         | `prettier --check .`                                                                                                                                                         |
+| `clean`                | `turbo run clean && rm -rf node_modules .turbo`                                                                                                                              |
+| `chain`                | `anvil --host 127.0.0.1 --port 8545 --chain-id 31337 --accounts 10 --balance 10000`                                                                                          |
+| `chain:docker`         | `docker compose up anvil`                                                                                                                                                    |
+| `chain:docker:down`    | `docker compose down`                                                                                                                                                        |
+| `contracts:deps`       | `forge install --root packages/contracts foundry-rs/forge-std@v1.16.2`                                                                                                       |
+| `contracts:build`      | `forge build --root packages/contracts`                                                                                                                                      |
+| `contracts:test`       | `forge test --root packages/contracts -vvv`                                                                                                                                  |
+| `contracts:test:watch` | `forge test --root packages/contracts --watch`                                                                                                                               |
+| `contracts:coverage`   | `forge coverage --root packages/contracts`                                                                                                                                   |
+| `contracts:fmt`        | `forge fmt --root packages/contracts`                                                                                                                                        |
+| `contracts:fmt:check`  | `forge fmt --root packages/contracts --check`                                                                                                                                |
+| `contracts:snapshot`   | `forge snapshot --root packages/contracts`                                                                                                                                   |
+| `contracts:deploy`     | `bun run contracts:deploy:01 && bun run contracts:deploy:02` — every exercise, in order                                                                                      |
+| `contracts:deploy:01`  | `forge script --root packages/contracts packages/contracts/script/01-coffee-tip-jar/DeployCoffeeTipJar.s.sol:DeployCoffeeTipJar --rpc-url anvil --broadcast && bun run sync` |
+| `contracts:deploy:02`  | `forge script --root packages/contracts packages/contracts/script/02-todo-list/DeployTodoList.s.sol:DeployTodoList --rpc-url anvil --broadcast && bun run sync`              |
+| `abi:sync`             | `bun run scripts/sync-abi.ts`                                                                                                                                                |
+| `deployments:sync`     | `bun run scripts/sync-deployments.ts`                                                                                                                                        |
+| `sync`                 | `bun run abi:sync && bun run deployments:sync`                                                                                                                               |
 
 Notes that matter when running these:
 
@@ -228,24 +247,24 @@ Notes that matter when running these:
 - `contracts:deploy` deliberately does **not** pass `--private-key`. The deploy script reads
   `vm.envUint("PRIVATE_KEY")` from the environment (root `.env` defaults to anvil account #0). Do
   not "improve" this into a shell-interpolated flag — the quoting breaks under `sh`.
-- Two known defects in `package.json` (**report, do not silently rewrite**, and prefer the
-  workaround when you need the command):
-  - `contracts:deps` fails with `Library directory is not relative to the repository root` because
-    `forge install` cannot take a **relative** `--root`. Workarounds:
-    `git submodule update --init --recursive`, or
-    `forge install --root "$PWD/packages/contracts" foundry-rs/forge-std@v1.16.2`, or
-    `cd packages/contracts && forge install foundry-rs/forge-std@v1.16.2`.
-  - `contracts:deploy` fails with `Error: No such file or directory (os error 2)` because
-    `forge script` resolves the script path against the **cwd**, not `--root`. Workarounds:
-    `forge script --root packages/contracts DeployCoffeeTipJar --rpc-url anvil --broadcast` (target
-    by contract name), or `cd packages/contracts && forge script script/…:DeployCoffeeTipJar …`.
-    Remember `bun run sync` afterwards.
+- One known defect in `package.json` (**report, do not silently rewrite**, and prefer the workaround
+  when you need the command): `contracts:deps` fails with
+  `Library directory is not relative to the repository root` because `forge install` cannot take a
+  **relative** `--root`. Workarounds: `git submodule update --init --recursive`, or
+  `forge install --root "$PWD/packages/contracts" foundry-rs/forge-std@v1.16.2`, or
+  `cd packages/contracts && forge install foundry-rs/forge-std@v1.16.2`.
+- `forge script` resolves the script path against the **cwd**, not `--root`, which is why every
+  `contracts:deploy:NN` repeats the full `packages/contracts/script/...` path even though it already
+  passes `--root`. Shortening it to a root-relative path brings back
+  `Error: No such file or directory (os error 2)`. Targeting by contract name
+  (`forge script --root packages/contracts DeployTodoList --rpc-url anvil --broadcast`) also works.
 - Everything else (`build`, `test`, `fmt`, `snapshot`, `coverage`) works fine with the relative
   `--root`.
-- `bun run lint` ends with **4 expected warnings, 0 errors**: `react-hooks/set-state-in-effect` in
-  `hooks/use-mounted.ts`, `react-hooks/incompatible-library` in `tip-form.tsx` (react-hook-form's
-  `watch()`), and `import/no-anonymous-default-export` in `apps/web/eslint.config.mjs` and
-  `postcss.config.mjs`. Do not "fix" them.
+- `bun run lint` ends with **5 expected warnings, 0 errors**: `react-hooks/set-state-in-effect` in
+  `hooks/use-mounted.ts`, `react-hooks/incompatible-library` in `tip-form.tsx` and
+  `new-task-form.tsx` (react-hook-form's `watch()`), and `import/no-anonymous-default-export` in
+  `apps/web/eslint.config.mjs` and `postcss.config.mjs`. Do not "fix" them; every new form built on
+  react-hook-form's `watch()` adds one more, so update the count instead.
 
 Ad-hoc Foundry commands are run directly, from the repo root with `--root` or from inside
 `packages/contracts`:
@@ -268,8 +287,10 @@ cast chain-id --rpc-url http://127.0.0.1:8545
   the stub. The stub **must stay CommonJS with a `Proxy`**: some of those imports are static named
   imports and an empty ESM module makes Turbopack fail with `The export X was not found`. If a new
   specifier appears, add it to the `x402Specifiers` array.
-- `packages/abi` (`@lab/abi`) — hand-written/generated ABIs (`coffee-tip-jar.ts`) and the
-  `deployments` address registry. No build step; Next transpiles it via `transpilePackages`.
+- `packages/abi` (`@lab/abi`) — hand-written/generated ABIs (`coffee-tip-jar.ts`, `todo-list.ts`)
+  and the `deployments` address registry. No build step; Next transpiles it via `transpilePackages`.
+- `docs/` — long-form procedures kept out of this file. Currently only
+  [`adding-an-exercise.md`](docs/adding-an-exercise.md), the canonical playbook for new exercises.
 - `packages/contracts` (`@lab/contracts`) — Foundry project. Has only `test`, `fmt` and `clean`
   scripts on purpose: no `build`/`lint`/`typecheck`, so `turbo run build` skips it.
 - `packages/eslint-config` (`@lab/eslint-config`) — flat configs, exports `./base` and `./next`. The
@@ -283,6 +304,17 @@ cast chain-id --rpc-url http://127.0.0.1:8545
   `packages/contracts/{out,cache,broadcast,docs}` are ignored.
 
 ## 7. Adding exercise N — the convention
+
+> **The full playbook lives in [`docs/adding-an-exercise.md`](docs/adding-an-exercise.md)** and is
+> the canonical procedure: numbering, the 18-file checklist, what goes in the brief and the test
+> suite, **how to verify a test suite whose implementation does not exist yet** (throwaway reference
+> implementation in the scratchpad, never in the repo), how to generate the hand-written ABI from
+> the interface artifact, and the definition of done. Read it before starting; what follows is the
+> summary.
+>
+> The user's trigger is simply _"new exercise: `<name>`"_ — everything else is already decided in
+> that document. If the number collides with a `planned` placeholder in `exercises.ts`, renumber the
+> placeholders instead of skipping ahead.
 
 For exercise `NN`, slug `NN-my-exercise`, contract `MyExercise`:
 
@@ -299,6 +331,9 @@ For exercise `NN`, slug `NN-my-exercise`, contract `MyExercise`:
 | Client components                          | `apps/web/src/app/exercises/NN-my-exercise/_components/*.tsx`                  |
 | Data layer                                 | `apps/web/src/hooks/use-my-exercise.ts`                                        |
 | Registry entry                             | `apps/web/src/lib/exercises.ts`                                                |
+| Deploy script entry                        | `contracts:deploy:NN` in `package.json`, added to `contracts:deploy`           |
+| Address override                           | `NEXT_PUBLIC_*_ADDRESS` in `apps/web/src/lib/env.ts` + `.env.example`          |
+| Revert copy                                | one `case` per custom error in `apps/web/src/lib/errors.ts`                    |
 
 Steps:
 
@@ -319,7 +354,9 @@ Steps:
    `script`); add the matching `deployments` key. The chain ids read by the deployment sync
    (`31337`, `11155111`) are shared by every contract. Then `bun run abi:sync` and re-export the new
    module from `packages/abi/src/index.ts`.
-7. Build the UI route + client components + hook, mirroring exercise 01's shape.
+7. Build the UI route + client components + hook, mirroring exercise 01's or 02's shape. `DeployHint`
+   is generic and takes `contractName`, `interfaceName`, `contractPath`, `deployScript` and
+   `addressEnvVar`. Never call `useWatchContractEvent` inside a loop — write the calls out one by one.
 8. Flip / add the `exercises.ts` entry:
 
 ```ts
@@ -339,11 +376,43 @@ export const exercises: Exercise[] = [
 ```
 
 `status: "planned"` entries render as non-clickable cards and must not link to a route. Currently
-planned: `02-crowdfund`, `03-erc20-token`, `04-nft-mint`.
+planned: `03-crowdfund`, `04-erc20-token`, `05-nft-mint`.
 
-Optionally add `NEXT_PUBLIC_MI_EJERCICIO_ADDRESS` to `apps/web/src/lib/env.ts` and `.env.example`
-for a manual address override. Env vars must be read as literal static
-`process.env.NEXT_PUBLIC_FOO` property accesses so Next can inline them — never dynamic indexing.
+Add `NEXT_PUBLIC_MY_EXERCISE_ADDRESS` to `apps/web/src/lib/env.ts` and `.env.example` for a manual
+address override. Env vars must be read as literal static `process.env.NEXT_PUBLIC_FOO` property
+accesses so Next can inline them — never dynamic indexing.
+
+### 7.1 The boilerplate commit
+
+**The scaffolding of a new exercise goes into its own single commit, made before the user starts
+implementing.** The point is that the generated boilerplate never gets mixed into the user's
+implementation history: they should be able to `git diff` their own work against a clean baseline,
+and to reset the scaffolding without losing a line of their Solidity.
+
+Rules:
+
+- **One commit, everything in it.** Every file from the §7 checklist — contracts, brief, tests,
+  deploy script, `@lab/abi`, `scripts/`, `package.json`, frontend, `README.md`, `CLAUDE.md`,
+  `docs/` — lands together. Do not split it into "contracts" and "frontend" commits.
+- **Nothing else in it.** No unrelated refactor, no half-written implementation, and obviously not
+  the user's `<Exercise>.sol` beyond the empty skeleton. If a pre-existing bug has to be fixed to
+  make the scaffolding work, say so — it still goes in, but it gets named in the commit body.
+- **Commit, never push.** Pushing needs its own explicit request; "commit this" is not one.
+- **Before committing**, the definition of done from
+  [`docs/adding-an-exercise.md`](docs/adding-an-exercise.md) must pass: `forge fmt --check`,
+  `format:check`, `lint`, `typecheck`, `build`, and the suite green in the scratchpad. A red
+  `forge test` in the repo is expected and does not block the commit.
+- **Message convention**, following `feat: monorepo scaffold + exercise 01 Coffee Tip Jar`:
+
+  ```text
+  feat: exercise NN boilerplate — <Title>
+  ```
+
+  Body: what the exercise teaches, the test count, and any repo-wide change the scaffolding forced
+  (renumbered `planned` entries, new `package.json` scripts, generalised components, doc updates).
+
+- **Working on `main` is fine here** — that is where this repo's history lives. Do not open a branch
+  for a boilerplate commit unless asked.
 
 ## 8. ABI + deployments sync workflow
 
@@ -362,10 +431,13 @@ forge script  ->  packages/contracts/broadcast/DeployCoffeeTipJar.s.sol/<chainId
 - `bun run sync` runs both. `bun run contracts:deploy` already chains it.
 - Both scripts are **non-fatal**: a missing artifact or broadcast file prints a warning and exits 0,
   because the implementation may not be finished yet. Keep it that way.
-- `packages/abi/src/coffee-tip-jar.ts` starts life **hand-written** to match `ICoffeeTipJar` exactly
-  (so the frontend typechecks before any contract compiles) and is overwritten by `abi:sync` once the
-  real artifact is available. If you edit the interface, edit the hand-written ABI in the same
-  change.
+- Every `packages/abi/src/<slug>.ts` starts life **hand-written** to match `I<Exercise>` exactly (so
+  the frontend typechecks before any contract compiles) and is overwritten by `abi:sync` once the
+  real artifact is available — the generated one is a superset, adding the `MAX_*` getters and the
+  constructor. The cheapest way to produce the hand-written version is to compile the interface on
+  its own in the scratchpad and lift `out/I<Exercise>.sol/I<Exercise>.json`'s `abi`; see
+  [`docs/adding-an-exercise.md`](docs/adding-an-exercise.md). If you edit the interface, edit the
+  hand-written ABI in the same change.
 - `deployments:sync` merges chain ids instead of replacing them, so a local anvil deploy never wipes
   a Sepolia address.
 - The frontend resolves an address as
@@ -416,9 +488,10 @@ forge script  ->  packages/contracts/broadcast/DeployCoffeeTipJar.s.sol/<chainId
   `v1.7.1`, `FOUNDRY_PROFILE=ci` (1000 fuzz runs), `working-directory: packages/contracts` (so no
   `--root` involved). A guard step counts non-interface `.sol` files under
   `packages/contracts/src`; when the count is 0 it skips `forge fmt --check`, `forge build --sizes`
-  and `forge test -vvv`. Note that the guard now counts the pre-created `CoffeeTipJar.sol` skeleton,
-  so those steps **do** run and will fail until the implementation is complete — expected while the
-  exercise is in progress.
+  and `forge test -vvv`. The count is never 0 any more (both exercise skeletons are committed), so
+  those steps **do** run and stay red until every implementation is complete — expected while an
+  exercise is in progress, and by design: `forge` compiles the whole project, so one unfinished
+  skeleton reddens the job even though exercise 01 is done.
 
 ## 11. Security
 

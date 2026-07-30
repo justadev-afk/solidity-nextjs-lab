@@ -6,6 +6,9 @@ export const deployments = {
   CoffeeTipJar: {
     31337: "0x5fbdb2315678afecb367f032d93f642f64180aa3",
   },
+  TodoList: {
+    // 31337: "0x...",
+  },
 } as const satisfies Record<string, Record<number, `0x${string}`>>;
 
 export type ContractName = keyof typeof deployments;

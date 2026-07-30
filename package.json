@@ -33,7 +33,9 @@
     "contracts:fmt": "forge fmt --root packages/contracts",
     "contracts:fmt:check": "forge fmt --root packages/contracts --check",
     "contracts:snapshot": "forge snapshot --root packages/contracts",
-    "contracts:deploy": "forge script --root packages/contracts packages/contracts/script/01-coffee-tip-jar/DeployCoffeeTipJar.s.sol:DeployCoffeeTipJar --rpc-url anvil --broadcast && bun run sync",
+    "contracts:deploy": "bun run contracts:deploy:01 && bun run contracts:deploy:02",
+    "contracts:deploy:01": "forge script --root packages/contracts packages/contracts/script/01-coffee-tip-jar/DeployCoffeeTipJar.s.sol:DeployCoffeeTipJar --rpc-url anvil --broadcast && bun run sync",
+    "contracts:deploy:02": "forge script --root packages/contracts packages/contracts/script/02-todo-list/DeployTodoList.s.sol:DeployTodoList --rpc-url anvil --broadcast && bun run sync",
     "abi:sync": "bun run scripts/sync-abi.ts",
     "deployments:sync": "bun run scripts/sync-deployments.ts",
     "sync": "bun run abi:sync && bun run deployments:sync"

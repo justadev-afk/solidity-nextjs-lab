@@ -8,8 +8,12 @@ Next.js UI are already written. The only missing piece is the Solidity implement
 is on you. The workflow is deliberately red → green: `forge test` fails until your contract exists
 and honours the behavioural contract.
 
-Exercise 01: **Coffee Tip Jar** — a tip jar with an `owner`, a configurable minimum, structs,
-dynamic arrays, mappings, events, custom errors and fund withdrawal via `call`.
+- **01 — Coffee Tip Jar**: a tip jar with an `owner`, a configurable minimum, structs, dynamic
+  arrays, mappings, events, custom errors and fund withdrawal via `call`. 31 tests.
+- **02 — On-Chain Decentralized Todo List**: no owner and no admin, one task list per address,
+  nested mappings, O(1) removal with swap-and-pop, a bulk clear and a paginated getter. 53 tests.
+
+New exercises follow a fixed procedure: [`docs/adding-an-exercise.md`](docs/adding-an-exercise.md).
 
 ---
 
@@ -128,6 +132,8 @@ dependencies.
 ├── .github/
 │   └── workflows/
 │       └── ci.yml                           # job "web" + job "contracts"
+├── docs/
+│   └── adding-an-exercise.md                # the playbook for new exercises
 ├── scripts/
 │   ├── sync-abi.ts                          # out/*.json -> packages/abi/src/*.ts
 │   └── sync-deployments.ts                  # broadcast/*.json -> deployments.ts
@@ -147,14 +153,21 @@ dependencies.
 │           │   ├── page.tsx                  # lab index
 │           │   ├── providers.tsx             # wagmi + react-query + RainbowKit + themes
 │           │   └── exercises/
-│           │       └── 01-coffee-tip-jar/
-│           │           ├── page.tsx          # server component (metadata + header)
+│           │       ├── 01-coffee-tip-jar/
+│           │       │   ├── page.tsx          # server component (metadata + header)
+│           │       │   └── _components/
+│           │       │       ├── coffee-tip-jar-app.tsx
+│           │       │       ├── jar-stats.tsx
+│           │       │       ├── tip-form.tsx
+│           │       │       ├── tips-feed.tsx
+│           │       │       └── owner-panel.tsx
+│           │       └── 02-todo-list/
+│           │           ├── page.tsx
 │           │           └── _components/
-│           │               ├── coffee-tip-jar-app.tsx
-│           │               ├── jar-stats.tsx
-│           │               ├── tip-form.tsx
-│           │               ├── tips-feed.tsx
-│           │               └── owner-panel.tsx
+│           │               ├── todo-list-app.tsx
+│           │               ├── new-task-form.tsx
+│           │               ├── task-board.tsx
+│           │               └── list-stats.tsx
 │           ├── components/
 │           │   ├── layout/
 │           │   │   ├── site-header.tsx
@@ -181,6 +194,7 @@ dependencies.
 │           │       └── tx-status.tsx
 │           ├── hooks/
 │           │   ├── use-coffee-tip-jar.ts     # exercise 01 data layer
+│           │   ├── use-todo-list.ts          # exercise 02 data layer
 │           │   └── use-mounted.ts
 │           └── lib/
 │               ├── chains.ts                 # foundry (31337) + sepolia
@@ -197,7 +211,8 @@ dependencies.
     │   └── src/
     │       ├── index.ts
     │       ├── deployments.ts                # addresses by chainId
-    │       └── coffee-tip-jar.ts             # coffeeTipJarAbi
+    │       ├── coffee-tip-jar.ts             # coffeeTipJarAbi
+    │       └── todo-list.ts                  # todoListAbi
     ├── contracts/                            # @lab/contracts (Foundry)
     │   ├── .gitignore
     │   ├── README.md
@@ -207,16 +222,24 @@ dependencies.
     │   ├── lib/
     │   │   └── forge-std/                    # v1.16.2 submodule
     │   ├── src/
-    │   │   └── 01-coffee-tip-jar/
-    │   │       ├── ICoffeeTipJar.sol         # interface (already written)
-    │   │       ├── README.md                 # exercise brief
-    │   │       └── CoffeeTipJar.sol          # <- YOU WRITE THIS (exists, empty)
+    │   │   ├── 01-coffee-tip-jar/
+    │   │   │   ├── ICoffeeTipJar.sol         # interface (already written)
+    │   │   │   ├── README.md                 # exercise brief
+    │   │   │   └── CoffeeTipJar.sol          # <- YOU WRITE THIS (implemented)
+    │   │   └── 02-todo-list/
+    │   │       ├── ITodoList.sol
+    │   │       ├── README.md
+    │   │       └── TodoList.sol              # <- YOU WRITE THIS (exists, empty)
     │   ├── test/
-    │   │   └── 01-coffee-tip-jar/
-    │   │       └── CoffeeTipJar.t.sol
+    │   │   ├── 01-coffee-tip-jar/
+    │   │   │   └── CoffeeTipJar.t.sol
+    │   │   └── 02-todo-list/
+    │   │       └── TodoList.t.sol
     │   └── script/
-    │       └── 01-coffee-tip-jar/
-    │           └── DeployCoffeeTipJar.s.sol
+    │       ├── 01-coffee-tip-jar/
+    │       │   └── DeployCoffeeTipJar.s.sol
+    │       └── 02-todo-list/
+    │           └── DeployTodoList.s.sol
     ├── eslint-config/                        # @lab/eslint-config (base.js, next.js)
     │   ├── package.json
     │   ├── base.js
@@ -230,8 +253,13 @@ dependencies.
 `bun.lock` **is committed** (CI runs `bun install --frozen-lockfile`). `packages/contracts/lib` is
 the `forge-std` submodule and is not ignored either, same as `packages/contracts/foundry.lock`.
 
-`CoffeeTipJar.sol` **already exists**, but only as a skeleton: SPDX, `pragma`, the interface import
-and `contract CoffeeTipJar is ICoffeeTipJar {}`. Filling it in is the exercise.
+Every implementation file is created up front as a **skeleton**: SPDX, `pragma`, the interface import
+and `contract Foo is IFoo {}`. Filling it in is the exercise. `CoffeeTipJar.sol` is already done;
+`TodoList.sol` is the empty one waiting for you.
+
+Because `forge` compiles the whole project, an unfinished skeleton makes `forge build`, `forge test`
+and `forge script` red for **every** exercise, including the ones that were green before. That is
+expected, not a regression.
 
 ---
 
@@ -256,17 +284,17 @@ cp .env.example apps/web/.env.local
 # 4. Local chain, in its own terminal (native anvil, chainId 31337, 10 accounts)
 bun run chain
 
-# 5. YOUR TURN: implement the contract (the file already exists, empty)
-#    packages/contracts/src/01-coffee-tip-jar/CoffeeTipJar.sol
-#    Full brief: packages/contracts/src/01-coffee-tip-jar/README.md
-#    Interface to implement: .../ICoffeeTipJar.sol
+# 5. YOUR TURN: implement the current exercise (the file already exists, empty)
+#    packages/contracts/src/02-todo-list/TodoList.sol
+#    Full brief: packages/contracts/src/02-todo-list/README.md
+#    Interface to implement: .../ITodoList.sol
 
 # 6. Red -> green
 bun run contracts:build
 bun run contracts:test
 
 # 7. Deploy to anvil and sync ABI + address into @lab/abi
-bun run contracts:deploy
+bun run contracts:deploy        # or contracts:deploy:01 / contracts:deploy:02
 
 # 8. Start the frontend (another terminal, with `nvm use` already done)
 bun run dev   # http://localhost:3000
@@ -422,7 +450,8 @@ file with different purposes:
 | `NEXT_PUBLIC_ANVIL_RPC_URL`            | RPC of the local chain. Defaults to `http://127.0.0.1:8545`.                            |
 | `NEXT_PUBLIC_SEPOLIA_RPC_URL`          | Sepolia RPC. Optional; empty = no dedicated transport.                                  |
 | `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` | Optional. Empty = injected connector only.                                              |
-| `NEXT_PUBLIC_COFFEE_TIP_JAR_ADDRESS`   | Pins the contract address and bypasses the deployment registry.                         |
+| `NEXT_PUBLIC_COFFEE_TIP_JAR_ADDRESS`   | Pins the exercise 01 address and bypasses the deployment registry.                      |
+| `NEXT_PUBLIC_TODO_LIST_ADDRESS`        | Same, for exercise 02.                                                                  |
 | `PRIVATE_KEY`                          | Key that signs deployments (`vm.envUint`). Defaults to anvil account #0.                |
 | `SEPOLIA_RPC_URL`                      | Sepolia RPC for `forge script` and the `sepolia` alias in `foundry.toml`.               |
 | `ETHERSCAN_API_KEY`                    | Contract verification on Etherscan.                                                     |
@@ -458,11 +487,12 @@ They all run from the repo root with `bun run <script>`. The table mirrors `pack
 | `format:check` | `prettier --check .`. This is what CI runs.                              |
 | `clean`        | `turbo run clean && rm -rf node_modules .turbo`.                         |
 
-`bun run lint` finishes with **4 expected warnings** (0 errors): `react-hooks/set-state-in-effect`
-in `hooks/use-mounted.ts` (the hydration guard sets state inside an effect on purpose),
-`react-hooks/incompatible-library` in `tip-form.tsx` because of react-hook-form's `watch()`, and two
-`import/no-anonymous-default-export` in `apps/web/eslint.config.mjs` and `postcss.config.mjs`. None
-of them are errors and none of them break CI.
+`bun run lint` finishes with **5 expected warnings** (0 errors): `react-hooks/set-state-in-effect`
+in `hooks/use-mounted.ts` (the hydration guard sets state inside an effect on purpose), two
+`react-hooks/incompatible-library` in `tip-form.tsx` and `new-task-form.tsx` because of
+react-hook-form's `watch()`, and two `import/no-anonymous-default-export` in
+`apps/web/eslint.config.mjs` and `postcss.config.mjs`. None of them are errors and none of them
+break CI.
 
 ### Local chain
 
@@ -483,17 +513,19 @@ Anvil mines instantly (the default behaviour). If you want to see _pending_ stat
 
 ### Contracts (Foundry on the host)
 
-| Script                 | What it does                                                                                                                                               |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `contracts:deps`       | `forge install --root packages/contracts foundry-rs/forge-std@v1.16.2`.                                                                                    |
-| `contracts:build`      | `forge build --root packages/contracts`.                                                                                                                   |
-| `contracts:test`       | `forge test --root packages/contracts -vvv`.                                                                                                               |
-| `contracts:test:watch` | `forge test --root packages/contracts --watch`. Re-runs on save.                                                                                           |
-| `contracts:coverage`   | `forge coverage --root packages/contracts`.                                                                                                                |
-| `contracts:fmt`        | `forge fmt --root packages/contracts`. `forge fmt` is the authority on Solidity, not Prettier.                                                             |
-| `contracts:fmt:check`  | `forge fmt --root packages/contracts --check`.                                                                                                             |
-| `contracts:snapshot`   | `forge snapshot --root packages/contracts`. Gas snapshot.                                                                                                  |
-| `contracts:deploy`     | `forge script --root packages/contracts script/01-coffee-tip-jar/DeployCoffeeTipJar.s.sol:DeployCoffeeTipJar --rpc-url anvil --broadcast && bun run sync`. |
+| Script                 | What it does                                                                                                                       |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `contracts:deps`       | `forge install --root packages/contracts foundry-rs/forge-std@v1.16.2`.                                                            |
+| `contracts:build`      | `forge build --root packages/contracts`.                                                                                           |
+| `contracts:test`       | `forge test --root packages/contracts -vvv`.                                                                                       |
+| `contracts:test:watch` | `forge test --root packages/contracts --watch`. Re-runs on save.                                                                   |
+| `contracts:coverage`   | `forge coverage --root packages/contracts`.                                                                                        |
+| `contracts:fmt`        | `forge fmt --root packages/contracts`. `forge fmt` is the authority on Solidity, not Prettier.                                     |
+| `contracts:fmt:check`  | `forge fmt --root packages/contracts --check`.                                                                                     |
+| `contracts:snapshot`   | `forge snapshot --root packages/contracts`. Gas snapshot.                                                                          |
+| `contracts:deploy`     | `bun run contracts:deploy:01 && bun run contracts:deploy:02`. Every exercise, in order.                                            |
+| `contracts:deploy:01`  | `forge script … script/01-coffee-tip-jar/DeployCoffeeTipJar.s.sol:DeployCoffeeTipJar --rpc-url anvil --broadcast && bun run sync`. |
+| `contracts:deploy:02`  | `forge script … script/02-todo-list/DeployTodoList.s.sol:DeployTodoList --rpc-url anvil --broadcast && bun run sync`.              |
 
 The `anvil` alias used by `--rpc-url` comes from `[rpc_endpoints]` in
 `packages/contracts/foundry.toml` and resolves to `http://127.0.0.1:8545`, so it works the same with
@@ -568,60 +600,27 @@ who wants a containerized node.
 
 ## Adding a new exercise
 
-Convention for exercise `NN` with slug `NN-my-exercise` and contract `MyExercise`:
+The full procedure lives in **[`docs/adding-an-exercise.md`](docs/adding-an-exercise.md)**: the
+18-file checklist, what goes in the interface, the brief and the test suite, how to verify a test
+suite whose implementation does not exist yet, how to generate the hand-written ABI, and the
+definition of done. It is written so that adding exercise `NN` only requires saying _"new exercise:
+`<name>`"_ — everything else is already decided there.
 
-1. **Interface + brief** (these two _are_ written up front):
-   - `packages/contracts/src/NN-my-exercise/IMyExercise.sol` — interface with full NatSpec, SPDX
-     MIT.
-   - `packages/contracts/src/NN-my-exercise/README.md` — the brief, in English: goal, behavioural
-     rules, constants, concepts and a "when you're done" checklist.
-2. **Tests**: `packages/contracts/test/NN-my-exercise/MyExercise.t.sol`, importing
-   `../../src/NN-my-exercise/MyExercise.sol`. They must cover every rule in the brief and fail
-   until the implementation exists.
-3. **Deployment**: `packages/contracts/script/NN-my-exercise/DeployMyExercise.s.sol`, reading
-   `vm.envUint("PRIVATE_KEY")` and the constructor parameters with `vm.envOr(...)`.
-4. **Implementation**: `packages/contracts/src/NN-my-exercise/MyExercise.sol` — created **empty**
-   (SPDX + pragma + import + `contract MyExercise is IMyExercise {}`) and **you write it**. That
-   is the exercise.
-5. **ABI**: add an entry to the `targets` table in `scripts/sync-abi.ts` with `artifact`
-   `"MyExercise.sol/MyExercise.json"`, `out` `"my-exercise.ts"`, `exportName` `"miEjercicioAbi"`
-   and `typeName` `"MyExerciseAbi"`; run `bun run abi:sync` and re-export the new module from
-   `packages/abi/src/index.ts`.
-6. **Deployments**: add an entry to the `targets` table in `scripts/sync-deployments.ts`
-   (`contractName: "MyExercise"`, `script: "DeployMyExercise.s.sol"`) and the key
-   `MyExercise: {}` to the `deployments` object in `packages/abi/src/deployments.ts`. The chainIds
-   being looked up (`31337` and `11155111`) are shared by every contract.
-7. **Frontend**:
-   - Route: `apps/web/src/app/exercises/NN-my-exercise/page.tsx` (server component, with
-     `metadata`).
-   - Client components: `apps/web/src/app/exercises/NN-my-exercise/_components/*.tsx`.
-   - Data layer: `apps/web/src/hooks/use-my-exercise.ts`.
-   - If it needs an address override, add `NEXT_PUBLIC_MI_EJERCICIO_ADDRESS` to
-     `apps/web/src/lib/env.ts` and to `.env.example`.
-8. **Registry**: in `apps/web/src/lib/exercises.ts`, move the entry from `status: "planned"` to
-   `"ready"` (or add it) so the lab index links to it:
+The shape, for slug `NN-my-exercise` and contract `MyExercise`:
 
-```ts
-export const exercises: Exercise[] = [
-  // ...
-  {
-    slug: "NN-my-exercise",
-    number: "NN",
-    title: "My Exercise",
-    summary: "One sentence about what this exercise practises.",
-    concepts: ["mappings", "events", "custom errors"],
-    status: "ready",
-    contractPath: "packages/contracts/src/NN-my-exercise",
-    href: "/exercises/NN-my-exercise",
-  },
-];
-```
+| Layer     | Files                                                                                                                                                                |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Contracts | `src/NN-my-exercise/{IMyExercise.sol, README.md, MyExercise.sol}`, `test/NN-my-exercise/MyExercise.t.sol`, `script/NN-my-exercise/DeployMyExercise.s.sol`            |
+| Packages  | `packages/abi/src/my-exercise.ts` + `index.ts` + a `deployments` key; `targets` in `scripts/sync-abi.ts` and `scripts/sync-deployments.ts`                           |
+| Tooling   | `contracts:deploy:NN` in `package.json`, added to `contracts:deploy`                                                                                                 |
+| Frontend  | `app/exercises/NN-my-exercise/{page.tsx,_components/*}`, `hooks/use-my-exercise.ts`, entries in `lib/exercises.ts`, `lib/env.ts`, `lib/errors.ts` and `.env.example` |
 
-Entries with `status: "planned"` render as non-clickable cards. Right now there are three:
-`02-crowdfund`, `03-erc20-token` and `04-nft-mint`.
+`MyExercise.sol` is created as an **empty skeleton** and stays that way — writing it is the
+exercise. Entries with `status: "planned"` in `lib/exercises.ts` render as non-clickable cards;
+right now there are three: `03-crowdfund`, `04-erc20-token` and `05-nft-mint`.
 
 To close the loop: `bun run contracts:test`, `bun run contracts:deploy` (which already calls
-`bun run sync`), `bun run typecheck` and `bun run lint`.
+`bun run sync`), `bun run typecheck`, `bun run lint` and `bun run build`.
 
 ---
 
@@ -636,12 +635,13 @@ Foundry is installed in `~/.config/.foundry/bin` and the PATH is exported from `
 new terminal, or in the current one: `source ~/.zshenv`. Check with `forge --version` → `1.7.1`. If
 it is not installed: `curl -L https://foundry.paradigm.xyz | bash && foundryup`.
 
-**`bun run contracts:build` fails with `Contract CoffeeTipJar should be marked as abstract`** (or
-`Member "MAX_NAME_LENGTH" not found`, or `Wrong argument count for function call`).
-This is the expected **red** state: `CoffeeTipJar.sol` exists but does not implement the whole
-`ICoffeeTipJar` interface yet, nor the constants the tests expect. The message keeps changing as you
-make progress; it turns green once the implementation is complete. Brief in
-`packages/contracts/src/01-coffee-tip-jar/README.md`.
+**`bun run contracts:build` fails with `Contract TodoList should be marked as abstract`** (or
+`Member "MAX_CONTENT_LENGTH" not found`, or `Wrong argument count for function call`).
+This is the expected **red** state: the exercise contract exists but does not implement its whole
+interface yet, nor the constants the tests expect. The message keeps changing as you make progress;
+it turns green once the implementation is complete. Brief in
+`packages/contracts/src/02-todo-list/README.md`. Note that `forge` compiles the entire project, so
+this also stops exercise 01's suite from running even though it is finished.
 
 **Port 8545 is already taken.**
 Find out who holds it with `lsof -nP -iTCP:8545 -sTCP:LISTEN`. If it is an earlier `anvil`, kill it
@@ -687,14 +687,16 @@ forge install --root "$PWD/packages/contracts" foundry-rs/forge-std@v1.16.2
 cd packages/contracts && forge install foundry-rs/forge-std@v1.16.2
 ```
 
-**`bun run contracts:deploy` fails with `Error: No such file or directory (os error 2)`.**
-`forge script` resolves the script path against the **working directory**, not against `--root`.
-From the repo root:
+**A deploy fails with `Error: No such file or directory (os error 2)`.**
+`forge script` resolves the script path against the **working directory**, not against `--root`,
+which is why the `contracts:deploy:NN` scripts repeat the full `packages/contracts/script/...` path
+even though they already pass `--root`. Shortening it to a root-relative path brings the error back.
+These two forms work as well, from the repo root:
 
 ```bash
-forge script --root packages/contracts DeployCoffeeTipJar --rpc-url anvil --broadcast && bun run sync
+forge script --root packages/contracts DeployTodoList --rpc-url anvil --broadcast && bun run sync
 # or, equivalently:
-cd packages/contracts && forge script script/01-coffee-tip-jar/DeployCoffeeTipJar.s.sol:DeployCoffeeTipJar --rpc-url anvil --broadcast
+cd packages/contracts && forge script script/02-todo-list/DeployTodoList.s.sol:DeployTodoList --rpc-url anvil --broadcast
 cd - && bun run sync
 ```
 
