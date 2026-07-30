@@ -382,6 +382,16 @@ forge script  ->  packages/contracts/broadcast/DeployCoffeeTipJar.s.sol/<chainId
   100, 2-space indent, trailing newline, `proseWrap: "preserve"` for Markdown. Run `bun run format`
   before finishing (with Node 22 on PATH).
 - `forge fmt` owns Solidity (2-space indent, `line_length` 120). `*.sol` is in `.prettierignore`.
+  **Never format `*.sol` with Prettier or `prettier-plugin-solidity`** — its output is not
+  `forge fmt`'s and CI runs `forge fmt --check`. They differ on unnamed tuple members, among other
+  things: prettier writes `(bool success, )`, forge writes `(bool success,)`. `.vscode/settings.json`
+  is committed (and un-ignored in `.gitignore`) precisely to pin `"solidity.formatter": "forge"` plus
+  `"solidity.monoRepoSupport": true`; both `JuanBlanco.solidity` and
+  `NomicFoundation.hardhat-solidity` contribute that key and both default it to `prettier`. The
+  monorepo flag is not optional: the extension pipes the buffer through `forge fmt --raw -` with the
+  cwd set to the nearest `foundry.toml`, and from the repo root — where there is none — forge falls
+  back to a 4-space default. If a `*.sol` diff ever shows only whitespace or `, )` churn, suspect the
+  editor formatter before anything else.
 - Comments sparse and only where non-obvious. Code identifiers and UI copy in **English**.
 - **Documentation language: English, always.** All documentation is written in **English** — every
   `README.md`, every exercise brief, every code comment, and every commit message. No Spanish

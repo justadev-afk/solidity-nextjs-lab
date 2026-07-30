@@ -1,0 +1,9 @@
+{
+  "recommendations": [
+    "JuanBlanco.solidity",
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "tamasfe.even-better-toml",
+    "editorconfig.editorconfig"
+  ]
+}

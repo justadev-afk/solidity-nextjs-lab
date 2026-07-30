@@ -94,7 +94,7 @@ contract CoffeeTipJar is ICoffeeTipJar {
       revert NothingToWithdraw();
     }
 
-    (bool success, ) = _owner.call{value: balance}("");
+    (bool success,) = _owner.call{value: balance}("");
 
     if (!success) {
       revert WithdrawFailed();

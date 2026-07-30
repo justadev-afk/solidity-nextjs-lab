@@ -734,7 +734,11 @@ are static and named, and with an empty ESM module Turbopack fails with
 - Prettier is the authority on JS/TS/CSS/MD/JSON/YAML: double quotes, semicolons, trailing commas,
   `printWidth` 100, 2-space indentation. Run `bun run format` before committing.
 - Solidity is formatted by **`forge fmt`** (2-space indentation, `line_length` 120). `*.sol` is in
-  `.prettierignore` on purpose.
+  `.prettierignore` on purpose. The committed `.vscode/settings.json` sets
+  `"solidity.formatter": "forge"` so the editor's _Format Document_ produces the same bytes as
+  `forge fmt --check`, which is what CI enforces — the extensions default to
+  `prettier-plugin-solidity`, which disagrees (`(bool success, )` vs `(bool success,)`). See
+  [`packages/contracts/README.md`](packages/contracts/README.md#editor-setup--keep-format-document-and-forge-fmt-in-agreement).
 - Components that use wagmi hooks are marked `"use client"`. Server components never import wagmi.
 - Code identifiers, UI copy and documentation are all in **English**, exercise briefs included.
 - The primitives in `components/ui/` are hand-written shadcn/ui (`new-york` style, `neutral` base,

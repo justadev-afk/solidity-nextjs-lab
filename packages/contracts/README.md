@@ -150,6 +150,38 @@ Convention: one `NN-slug` folder per exercise, with the same name under `src/`, 
   environment. `[etherscan]` reads `${ETHERSCAN_API_KEY}`.
 - `ffi = false` and `fs_permissions` limited to reading `./out`.
 
+## Editor setup — keep "Format Document" and `forge fmt` in agreement
+
+`forge fmt` is the only authority on `*.sol`, and CI enforces it with `forge fmt --check`. The
+Solidity extensions do **not** use it by default, so an editor left unconfigured silently writes
+code that CI rejects. The two formatters disagree on, among other things, unnamed tuple members:
+
+```solidity
+(bool success, ) = _owner.call{value: balance}("");  // prettier-plugin-solidity
+(bool success,) = _owner.call{value: balance}("");   // forge fmt  <- the correct one here
+```
+
+`.vscode/settings.json` is committed for exactly this reason:
+
+| Setting                              | Value                 | Why                                                                                                                                                                                                                                                   |
+| ------------------------------------ | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `solidity.formatter`                 | `forge`               | Defaults to `prettier` in **both** `JuanBlanco.solidity` and `NomicFoundation.hardhat-solidity`. Same key, so one line fixes whichever is active.                                                                                                     |
+| `solidity.monoRepoSupport`           | `true`                | The extension runs `forge fmt --raw -` with the cwd set to the nearest folder holding a `foundry.toml`. Without it the cwd is the repo root, no `foundry.toml` is found, and you get forge's default 4-space indent instead of the 2 configured here. |
+| `[solidity].editor.defaultFormatter` | `JuanBlanco.solidity` | Both extensions register a formatter for `solidity`; pin one so the choice is not ambiguous.                                                                                                                                                          |
+
+Requirements and caveats:
+
+- The extension invokes a bare `forge`, so it has to be on the PATH that VS Code itself resolves.
+  If formatting silently does nothing, check the Extension Host log — a missing
+  `~/.config/.foundry/bin` is the usual cause, and relaunching VS Code from a terminal that has it
+  is the quickest fix.
+- Format-on-save is deliberately **not** enabled: `forge fmt` refuses to format a file that does not
+  parse, which is the normal state of a half-written exercise. If you want it anyway, add
+  `"editor.formatOnSave": true` inside the `[solidity]` block.
+- Not using VS Code? Point your editor at `forge fmt` rather than at `prettier-plugin-solidity`, or
+  just run `bun run contracts:fmt` before committing. `bun run contracts:fmt:check` is the exact
+  command CI runs.
+
 ## Exercise workflow
 
 1. Read the brief: `src/01-coffee-tip-jar/README.md`.

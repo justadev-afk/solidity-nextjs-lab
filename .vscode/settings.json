@@ -1,0 +1,32 @@
+{
+  // `forge fmt` is the single authority for *.sol — it is what CI runs
+  // (`forge fmt --check` in .github/workflows/ci.yml). Both Solidity extensions
+  // (JuanBlanco.solidity and NomicFoundation.hardhat-solidity) contribute this same
+  // key and both default it to "prettier", whose output is NOT the same:
+  // prettier-plugin-solidity writes `(bool success, )`, forge writes `(bool success,)`.
+  // Leaving the default makes "Format Document" produce code that CI rejects.
+  "solidity.formatter": "forge",
+
+  // Required in this monorepo. The extension shells out to `forge fmt --raw -` with
+  // the cwd set to the nearest ancestor folder containing foundry.toml. Turn this off
+  // and the cwd becomes the repo root, where there is no foundry.toml — forge then
+  // falls back to its built-in defaults and emits 4-space indentation instead of the
+  // 2 configured in packages/contracts/foundry.toml.
+  "solidity.monoRepoSupport": true,
+
+  "[solidity]": {
+    // Pin the formatter: two extensions register one for `solidity`, and without this
+    // VS Code asks which to use (or silently picks the other one).
+    "editor.defaultFormatter": "JuanBlanco.solidity",
+    // Mirrors [fmt] tab_width in packages/contracts/foundry.toml, for manual typing
+    // and auto-indent. forge fmt is still what decides on save/format.
+    "editor.tabSize": 2
+  },
+
+  // Solidity artifacts that are gitignored but still clutter the file tree.
+  "files.exclude": {
+    "packages/contracts/bin": true,
+    "packages/contracts/cache": true,
+    "packages/contracts/out": true
+  }
+}

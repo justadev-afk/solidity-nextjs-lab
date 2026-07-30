@@ -30,7 +30,11 @@ packages/contracts/broadcast/
 packages/contracts/bin/
 
 # editors
-.vscode/
+# .vscode/settings.json and .vscode/extensions.json ARE committed: they are what keeps
+# the editor's "Format Document" in agreement with `forge fmt`, which is what CI checks.
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
 .idea/
 *.swp
 
