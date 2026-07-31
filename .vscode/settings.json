@@ -16,13 +16,17 @@
   "terminal.integrated.gpuAcceleration": "off",
 
   "[solidity]": {
-    // Pin the formatter: two extensions register one for `solidity`, and without this
-    // VS Code asks which to use (or silently picks the other one).
-    "editor.defaultFormatter": "NomicFoundation.hardhat-solidity",
     // Mirrors [fmt] tab_width in packages/contracts/foundry.toml, for manual typing
     // and auto-indent. forge fmt is still what decides on save/format.
     "editor.tabSize": 2
   },
+
+  // Do not install runtimeverification.simbolik in this repo. It runs
+  // `forge lint` on every *.sol change inside a hidden terminal and only disposes
+  // that terminal when the command exits 0 — which never happens while an exercise
+  // is unimplemented, so it exhausts the macOS pty pool in minutes and every new
+  // terminal then fails to launch. `simbolik.autobuild: "never"` does NOT stop it;
+  // the linter has no off switch. See docs/vscode-pty-exhaustion.md.
 
   // Solidity artifacts that are gitignored but still clutter the file tree.
   "files.exclude": {
