@@ -140,7 +140,7 @@ packages/contracts
 ├── test/02-todo-list/
 │   └── TodoList.t.sol                    # full suite (53 tests), already there
 ├── test/03-crowdfund/
-│   └── Crowdfund.t.sol                   # full suite (68 tests), already there
+│   └── Crowdfund.t.sol                   # full suite (70 tests), already there
 ├── script/01-coffee-tip-jar/
 │   └── DeployCoffeeTipJar.s.sol          # deployment, already there
 ├── script/02-todo-list/

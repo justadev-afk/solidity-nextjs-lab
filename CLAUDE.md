@@ -11,18 +11,15 @@ This repo is a practice lab. The whole point is that **the user** implements the
 - **Never create, fill in, complete or "fix" `packages/contracts/src/**/<Exercise>.sol`** — the
   concrete implementation — unless the user explicitly asks for it in that same turn ("write it
   yourself", "give me the solution", "implement it for me").
-- Every `src/NN-slug/<Exercise>.sol` is pre-created as a **skeleton** — SPDX, `pragma`, the interface
-  import, the exercise's `public constant`s (if it has any) and a `// your code here` marker in an
-  otherwise empty `contract Exercise is IExercise {}` body — so the user can fill in the logic. The
-  constants are **boilerplate, not practice**: their names, types and values are dictated by the
-  brief and asserted verbatim by the tests, so typing them out teaches nothing. Everything else —
-  state variables, the constructor, modifiers, every function body — is the user's. Treat those files
-  as **the user's working copies**: assume they are editing one right now. Never read-modify-write,
-  never reformat, never revert, never append "just the missing bit". If you must touch one, ask
-  first.
+- Every `src/NN-slug/<Exercise>.sol` ships as a **skeleton**: SPDX, `pragma`, the interface import,
+  the exercise's `public constant`s and `// your code here`. The constants are the only exception
+  and the reasoning is in the playbook §1; everything else — state, constructor, modifiers, every
+  function body — is the user's. Treat those files as **the user's working copies**: assume they are
+  editing one right now. Never read-modify-write, never reformat, never revert, never append "just
+  the missing bit". If you must touch one, ask first.
   - `01-coffee-tip-jar/CoffeeTipJar.sol` — **implemented by the user**, its 31 tests pass.
   - `02-todo-list/TodoList.sol` — **implemented by the user**, its 53 tests pass.
-  - `03-crowdfund/Crowdfund.sol` — **being written by the user right now**, 68 tests.
+  - `03-crowdfund/Crowdfund.sol` — **being written by the user right now**, 70 tests.
 - `forge build` / `forge test` **failing is the correct starting state**, not a bug to fix. The error
   moves as the user progresses: `Contract Crowdfund should be marked as abstract` while the interface
   is unimplemented, then things like `Member "FEE_BPS" not found` or
@@ -67,7 +64,7 @@ append-only campaign registry with **global** ids, a derived `Status` enum (`Act
 / `Failed`, computed from `block.timestamp`, `pledged` and `goal` — never stored), a nested
 `mapping(uint256 => mapping(address => uint256))` ledger, five events, thirteen custom errors, ETH
 in via `payable` and out via low-level `call`, full refunds on failure, a 2% protocol fee accrued to
-the deployer on success, and a `getCampaigns` window that clamps instead of reverting. 68 tests in
+the deployer on success, and a `getCampaigns` window that clamps instead of reverting. 70 tests in
 `test/03-crowdfund/Crowdfund.t.sol`. **Skeleton only — the user is writing it.**
 
 ## 2. Tech stack
@@ -368,11 +365,8 @@ Steps:
    place), the interface, behavioural rules, constants, concepts to learn, commands, and a "when you
    are done" checklist. State explicitly that `forge build`/`forge test` fail until the
    implementation is complete.
-3. Write the Foundry test suite covering every behavioural rule, including fuzz tests and any
-   attacker contracts. Add a top-of-file comment noting it will not compile until the user writes
-   the implementation. Add the matching `contracts:test:NN` script to `package.json`
-   (`forge test --root packages/contracts --match-path "test/NN-my-exercise/*" -vvv`), so the user
-   can iterate on this exercise alone instead of running the whole lab.
+3. Write the Foundry test suite and the `contracts:test:NN` script — playbook §3.3 and §5.3. The
+   reentrancy rules there are not optional and are easy to get subtly wrong; read them.
 4. Write the deploy script: `vm.envUint("PRIVATE_KEY")`, constructor args via `vm.envOr(...)`,
    `vm.startBroadcast(pk)` / `vm.stopBroadcast()`, `console2.log` the address.
 5. Create `MyExercise.sol` as a **skeleton only** — SPDX, `pragma`, the interface import, the

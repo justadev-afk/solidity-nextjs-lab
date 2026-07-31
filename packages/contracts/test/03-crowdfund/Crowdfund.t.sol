@@ -705,22 +705,51 @@ contract CrowdfundTest is Test {
 
   /// @dev The classic drain: a backer contract that calls `claimRefund` again from `receive`. It
   ///      only fails if the contribution is zeroed BEFORE the ETH goes out.
+  /// @dev The attacker stakes **less** than the money left behind on purpose. Stake more than the
+  ///      remainder and the re-entrant transfer fails for lack of balance, which makes the test
+  ///      pass against an implementation that clears the ledger *after* the call — the attack was
+  ///      stopped by arithmetic, not by the bookkeeping. Here the contract can comfortably pay a
+  ///      second time, so the only thing that can refuse it is a ledger already set to zero.
   function test_ClaimRefund_IsSafeAgainstReentrancy() public {
     ReentrantBacker attacker = new ReentrantBacker(crowdfund);
-    vm.deal(address(this), 3 ether);
+    vm.deal(address(this), 1 ether);
 
     uint256 id = _create(alice, "campaign");
-    attacker.back{value: 3 ether}(id);
-    _back(carol, id, 2 ether);
+    attacker.back{value: 1 ether}(id);
+    _back(carol, id, 4 ether);
     _end(id);
 
     attacker.claim();
 
     assertEq(attacker.reentryAttempts(), 1, "the receive hook did run");
-    assertFalse(attacker.reentrySucceeded(), "the second refund must be rejected");
-    assertEq(address(attacker).balance, 3 ether, "the attacker gets back exactly what it put in");
-    assertEq(address(crowdfund).balance, 2 ether, "carol's money is still there");
-    assertEq(crowdfund.contributionOf(id, carol), 2 ether);
+    assertFalse(attacker.reentrySucceeded(), "the second refund must be rejected by the ledger");
+    assertEq(address(attacker).balance, 1 ether, "the attacker gets back exactly what it put in");
+    assertEq(address(crowdfund).balance, 4 ether, "carol's money is still there");
+    assertEq(crowdfund.contributionOf(id, carol), 4 ether);
+  }
+
+  /// @dev The full drain, not just a double refund: an attacker with a token stake re-enters as
+  ///      many times as the contract will pay, and must still leave with exactly its own money.
+  ///      `claimRefund` reverting on the re-entry is what stops the loop.
+  function test_ClaimRefund_ReentrancyCannotReachAnotherBackersMoney() public {
+    DrainingBacker attacker = new DrainingBacker(crowdfund);
+    vm.deal(address(this), 1 ether);
+
+    // A goal far out of reach, so 10 ETH of contributions still leave the campaign Failed.
+    vm.prank(alice);
+    uint256 id = crowdfund.createCampaign("campaign", 100 ether, DEFAULT_DURATION);
+
+    attacker.back{value: 1 ether}(id);
+    _back(carol, id, 9 ether);
+    _end(id);
+
+    attacker.claim();
+
+    assertGt(attacker.reentryAttempts(), 0, "the receive hook did run");
+    assertEq(address(attacker).balance, 1 ether, "1 ETH in, 1 ETH out: never a wei of carol's");
+    assertEq(address(crowdfund).balance, 9 ether, "every wei carol is owed is still in the contract");
+    assertEq(crowdfund.contributionOf(id, carol), 9 ether, "and the ledger still says so");
+    assertEq(crowdfund.contributionOf(id, address(attacker)), 0, "the attacker's entry is settled");
   }
 
   // ---------------------------------------------------------------------------------------
@@ -803,6 +832,39 @@ contract CrowdfundTest is Test {
     rejectingOwner.withdrawProtocolFees();
 
     assertEq(instance.protocolFees(), fee, "a failed sweep leaves the fees credited");
+  }
+
+  /// @dev The owner is the one account guaranteed to be called with ETH, so it is also the one
+  ///      best placed to re-enter. The fee it has earned is deliberately tiny next to the money a
+  ///      failed campaign still owes its backers: sweeping twice must be impossible, because the
+  ///      second sweep would be paid out of somebody else's refund.
+  function test_WithdrawProtocolFees_IsSafeAgainstReentrancy() public {
+    ReentrantOwner attacker = new ReentrantOwner();
+    Crowdfund instance = attacker.crowdfund();
+
+    vm.prank(alice);
+    uint256 winner = instance.createCampaign("winner", DEFAULT_GOAL, DEFAULT_DURATION);
+    vm.prank(bob);
+    uint256 loser = instance.createCampaign("loser", 100 ether, DEFAULT_DURATION);
+
+    vm.deal(carol, DEFAULT_GOAL + 50 ether);
+    vm.startPrank(carol);
+    instance.contribute{value: DEFAULT_GOAL}(winner);
+    instance.contribute{value: 50 ether}(loser);
+    vm.stopPrank();
+
+    vm.warp(uint256(instance.getCampaign(winner).deadline));
+    vm.prank(alice);
+    instance.claimFunds(winner);
+
+    uint256 fee = _fee(DEFAULT_GOAL);
+    attacker.sweep();
+
+    assertGt(attacker.reentryAttempts(), 0, "the receive hook did run");
+    assertEq(address(attacker).balance, fee, "the owner may take the fee it earned and nothing else");
+    assertEq(instance.protocolFees(), 0, "and the accrued fees are settled exactly once");
+    assertEq(address(instance).balance, 50 ether, "the failed campaign's refunds are untouched");
+    assertEq(instance.contributionOf(loser, carol), 50 ether, "carol is still owed every wei");
   }
 
   // ---------------------------------------------------------------------------------------
@@ -1060,6 +1122,62 @@ contract RejectingOwner {
 
   function withdrawProtocolFees() external returns (uint256) {
     return crowdfund.withdrawProtocolFees();
+  }
+}
+
+/// @notice Owns its own `Crowdfund` and tries to sweep the protocol fees again from `receive`.
+/// @dev The inner revert is swallowed so the outer sweep still settles: the assertion that matters
+///      is how much ETH ends up here, not whether the transaction blew up.
+contract ReentrantOwner {
+  Crowdfund public immutable crowdfund;
+
+  uint256 public reentryAttempts;
+
+  constructor() {
+    crowdfund = new Crowdfund();
+  }
+
+  function sweep() external {
+    crowdfund.withdrawProtocolFees();
+  }
+
+  receive() external payable {
+    if (reentryAttempts > 4) return;
+    reentryAttempts += 1;
+
+    try crowdfund.withdrawProtocolFees() {} catch {}
+  }
+}
+
+/// @notice Backs a campaign with a token amount and re-enters `claimRefund` for as long as the
+///         contract still holds enough to pay it, which is what turns a double refund into a
+///         drain of everybody else's money.
+contract DrainingBacker {
+  Crowdfund internal immutable CROWDFUND;
+
+  uint256 public campaignId;
+  uint256 public stake;
+  uint256 public reentryAttempts;
+
+  constructor(Crowdfund crowdfund) {
+    CROWDFUND = crowdfund;
+  }
+
+  function back(uint256 id) external payable {
+    campaignId = id;
+    stake = msg.value;
+    CROWDFUND.contribute{value: msg.value}(id);
+  }
+
+  function claim() external {
+    CROWDFUND.claimRefund(campaignId);
+  }
+
+  receive() external payable {
+    if (reentryAttempts >= 20 || address(CROWDFUND).balance < stake) return;
+    reentryAttempts += 1;
+
+    try CROWDFUND.claimRefund(campaignId) {} catch {}
   }
 }
 

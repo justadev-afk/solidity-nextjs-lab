@@ -155,6 +155,22 @@ Written in English, in this order:
 - Add **fuzz tests** for anything with an arithmetic or structural invariant, and helper contracts
   for anything that needs a contract caller (reentrancy attacker, rejecting receiver, plain
   contract owner).
+- **Every function that sends ETH out gets a reentrancy test, and the attacker must stake _less_
+  than what stays behind.** This is not a style preference, it is the difference between a test that
+  works and one that only looks like it does. If the attacker's own money is the largest thing in
+  the contract, the re-entrant transfer fails for lack of balance and the test passes against an
+  implementation that clears its bookkeeping _after_ the call — stopped by arithmetic, not by the
+  contract. Give the attacker a token stake and an honest backer a large one, then assert on
+  **balances**, not just on a revert: the attacker leaves with exactly what it put in, the honest
+  party's money and ledger entry are untouched. One test per exit path (creator payout, backer
+  refund, fee sweep), because they are separate functions and fixing one does not fix the others.
+  Exercise 03 has the three: `test_ClaimFunds_IsSafeAgainstReentrancy`,
+  `test_ClaimRefund_ReentrancyCannotReachAnotherBackersMoney` and
+  `test_WithdrawProtocolFees_IsSafeAgainstReentrancy`.
+- **Prove a security test can fail.** Before shipping it, run it against a deliberately broken
+  reference implementation in the scratchpad (state cleared after the call instead of before). A
+  reentrancy test that passes against the vulnerable version is worse than no test, because it
+  certifies the bug.
 - Assertion messages are not optional: `assertEq(a, b, "why this must hold")`. They are the fastest
   hint the user gets when they go red.
 - Never assert an ordering the interface does not promise.

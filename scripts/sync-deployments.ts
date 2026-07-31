@@ -13,6 +13,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { format, resolveConfig } from "prettier";
 
 type Address = `0x${string}`;
 
@@ -199,7 +200,12 @@ async function main(): Promise<void> {
     return;
   }
 
-  const output = renderDeployments(registry);
+  // Run the rendered source through Prettier so regenerating an unchanged registry is a no-op
+  // instead of a whitespace diff that `bun run format` then reverts. Same reason as sync-abi.ts.
+  const output = await format(renderDeployments(registry), {
+    ...(await resolveConfig(deploymentsPath)),
+    filepath: deploymentsPath,
+  });
   if (output === existing) {
     console.log(`${label}  packages/abi/src/deployments.ts already up to date.`);
     return;

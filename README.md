@@ -14,7 +14,7 @@ and honours the behavioural contract.
   nested mappings, O(1) removal with swap-and-pop, a bulk clear and a paginated getter. 53 tests.
 - **03 — Decentralized Crowdfunding Protocol**: anyone opens time-boxed campaigns with an ETH goal,
   a derived `Status` enum, a nested contribution ledger, full refunds on failure, a 2% protocol fee
-  on success and reentrancy-safe payouts. 68 tests.
+  on success and reentrancy-safe payouts. 70 tests.
 
 New exercises follow a fixed procedure: [`docs/adding-an-exercise.md`](docs/adding-an-exercise.md).
 

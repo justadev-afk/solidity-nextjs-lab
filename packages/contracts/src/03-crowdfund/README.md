@@ -17,7 +17,7 @@ allowed to touch which.
 
 ## Goal
 
-Write the implementation **yourself** until the 68 tests that are already written pass. The
+Write the implementation **yourself** until the 70 tests that are already written pass. The
 interface, the test suite, the deploy script, the ABI and the Next.js UI all exist already: the only
 missing piece is the contract.
 
@@ -274,7 +274,7 @@ in `packages/contracts/README.md`.
 ```sh
 bun run setup               # once: bun install + forge-std v1.16.2
 bun run contracts:build     # compile
-bun run contracts:test:03   # only this exercise's 68 tests — the one to live in
+bun run contracts:test:03   # only this exercise's 70 tests — the one to live in
 bun run contracts:test      # the whole lab
 bun run contracts:fmt       # forge fmt (CI checks the formatting)
 ```
@@ -314,7 +314,7 @@ fails too — `forge script` compiles the entire project before it runs anything
 ## When you are done
 
 - [ ] `bun run contracts:build` compiles with no warnings.
-- [ ] `bun run contracts:test` passes 100% (68 tests).
+- [ ] `bun run contracts:test` passes 100% (70 tests).
 - [ ] `bun run contracts:fmt:check` has nothing to complain about.
 - [ ] `FOUNDRY_PROFILE=ci forge test --root packages/contracts` passes too (the 1000 fuzz runs CI
       uses; equivalent to `forge test --root packages/contracts --fuzz-runs 1000`).
