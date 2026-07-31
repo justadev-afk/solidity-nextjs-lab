@@ -152,10 +152,10 @@ contract CrowdfundTest is Test {
     vm.prank(alice);
     uint256 id = crowdfund.createCampaign("buy a espresso machine", DEFAULT_GOAL, DEFAULT_DURATION);
 
-    assertEq(id, 1, "the first campaign ever gets id 1");
+    assertEq(id, 0, "the first campaign ever gets id 0");
 
     ICrowdfund.Campaign memory campaign = crowdfund.getCampaign(id);
-    assertEq(campaign.id, 1);
+    assertEq(campaign.id, 0);
     assertEq(campaign.creator, alice);
     assertEq(campaign.title, "buy a espresso machine");
     assertEq(campaign.goal, DEFAULT_GOAL);
@@ -170,21 +170,21 @@ contract CrowdfundTest is Test {
 
   function test_CreateCampaign_EmitsCampaignCreated() public {
     vm.expectEmit(address(crowdfund));
-    emit ICrowdfund.CampaignCreated(1, alice, "open source grant", DEFAULT_GOAL, START_TIMESTAMP + DEFAULT_DURATION);
+    emit ICrowdfund.CampaignCreated(0, alice, "open source grant", DEFAULT_GOAL, START_TIMESTAMP + DEFAULT_DURATION);
 
     vm.prank(alice);
     crowdfund.createCampaign("open source grant", DEFAULT_GOAL, DEFAULT_DURATION);
   }
 
-  /// @dev The big difference with exercise 02: ids are GLOBAL here, not per address. Campaign 1
-  ///      is campaign 1 for everybody, so the registry is shared even though the money is not.
+  /// @dev The big difference with exercise 02: ids are GLOBAL here, not per address. Campaign 0
+  ///      is campaign 0 for everybody, so the registry is shared even though the money is not.
   function test_CreateCampaign_AssignsGlobalIncrementingIds() public {
-    assertEq(_create(alice, "alice one"), 1);
-    assertEq(_create(bob, "bob one"), 2, "bob does not restart at 1: the counter is shared");
-    assertEq(_create(alice, "alice two"), 3);
+    assertEq(_create(alice, "alice one"), 0);
+    assertEq(_create(bob, "bob one"), 1, "bob does not restart at 0: the counter is shared");
+    assertEq(_create(alice, "alice two"), 2);
 
-    assertEq(crowdfund.campaignCount(), 3);
-    assertEq(crowdfund.getCampaign(2).creator, bob);
+    assertEq(crowdfund.campaignCount(), 3, "the count is a total, not the last id");
+    assertEq(crowdfund.getCampaign(1).creator, bob);
   }
 
   function test_CreateCampaign_TracksCampaignsPerCreator() public {
@@ -217,22 +217,37 @@ contract CrowdfundTest is Test {
   // ---------------------------------------------------------------------------------------
 
   function test_Lookups_RevertForUnknownIds() public {
-    _create(alice, "only campaign"); // id 1
+    _create(alice, "only campaign"); // id 0
+
+    vm.expectRevert(abi.encodeWithSelector(ICrowdfund.CampaignNotFound.selector, 1));
+    crowdfund.getCampaign(1);
+
+    vm.expectRevert(abi.encodeWithSelector(ICrowdfund.CampaignNotFound.selector, 1));
+    crowdfund.statusOf(1);
+
+    vm.expectRevert(abi.encodeWithSelector(ICrowdfund.CampaignNotFound.selector, 1));
+    crowdfund.contributionOf(1, bob);
+
+    vm.expectRevert(abi.encodeWithSelector(ICrowdfund.CampaignNotFound.selector, 1));
+    crowdfund.backerCount(1);
+
+    vm.expectRevert(abi.encodeWithSelector(ICrowdfund.CampaignNotFound.selector, 99));
+    crowdfund.getCampaign(99);
+  }
+
+  /// @dev The trap of 0-based ids. Id 0 is a perfectly good campaign once one exists, but on an
+  ///      empty registry it is out of range like any other: the valid interval is
+  ///      `0 ..= campaignCount() - 1`, which is empty when the count is 0. An implementation that
+  ///      guards with `id > campaignCount()` instead of `id >= campaignCount()` passes every other
+  ///      lookup test and fails this one.
+  function test_Lookups_RevertForIdZeroOnAnEmptyRegistry() public {
+    assertEq(crowdfund.campaignCount(), 0);
 
     vm.expectRevert(abi.encodeWithSelector(ICrowdfund.CampaignNotFound.selector, 0));
     crowdfund.getCampaign(0);
 
-    vm.expectRevert(abi.encodeWithSelector(ICrowdfund.CampaignNotFound.selector, 2));
-    crowdfund.getCampaign(2);
-
-    vm.expectRevert(abi.encodeWithSelector(ICrowdfund.CampaignNotFound.selector, 2));
-    crowdfund.statusOf(2);
-
-    vm.expectRevert(abi.encodeWithSelector(ICrowdfund.CampaignNotFound.selector, 2));
-    crowdfund.contributionOf(2, bob);
-
-    vm.expectRevert(abi.encodeWithSelector(ICrowdfund.CampaignNotFound.selector, 2));
-    crowdfund.backerCount(2);
+    vm.expectRevert(abi.encodeWithSelector(ICrowdfund.CampaignNotFound.selector, 0));
+    crowdfund.statusOf(0);
   }
 
   function test_Views_AreReadableByAnyone() public {
@@ -298,9 +313,9 @@ contract CrowdfundTest is Test {
 
   function test_Contribute_RevertsForUnknownId() public {
     vm.deal(bob, 1 ether);
-    vm.expectRevert(abi.encodeWithSelector(ICrowdfund.CampaignNotFound.selector, 1));
+    vm.expectRevert(abi.encodeWithSelector(ICrowdfund.CampaignNotFound.selector, 0));
     vm.prank(bob);
-    crowdfund.contribute{value: 1 ether}(1);
+    crowdfund.contribute{value: 1 ether}(0);
   }
 
   function test_Contribute_RevertsOnZeroValue() public {
@@ -423,9 +438,9 @@ contract CrowdfundTest is Test {
   // ---------------------------------------------------------------------------------------
 
   function test_ClaimFunds_RevertsForUnknownId() public {
-    vm.expectRevert(abi.encodeWithSelector(ICrowdfund.CampaignNotFound.selector, 1));
+    vm.expectRevert(abi.encodeWithSelector(ICrowdfund.CampaignNotFound.selector, 0));
     vm.prank(alice);
-    crowdfund.claimFunds(1);
+    crowdfund.claimFunds(0);
   }
 
   function test_ClaimFunds_RevertsForANonCreator() public {
@@ -570,9 +585,9 @@ contract CrowdfundTest is Test {
   // ---------------------------------------------------------------------------------------
 
   function test_ClaimRefund_RevertsForUnknownId() public {
-    vm.expectRevert(abi.encodeWithSelector(ICrowdfund.CampaignNotFound.selector, 1));
+    vm.expectRevert(abi.encodeWithSelector(ICrowdfund.CampaignNotFound.selector, 0));
     vm.prank(bob);
-    crowdfund.claimRefund(1);
+    crowdfund.claimRefund(0);
   }
 
   function test_ClaimRefund_RevertsWhileTheCampaignIsActive() public {
@@ -800,9 +815,9 @@ contract CrowdfundTest is Test {
     ICrowdfund.Campaign[] memory page = crowdfund.getCampaigns(1, 2);
 
     assertEq(page.length, 2);
-    assertEq(page[0].id, 2, "offset 0 is campaign id 1");
-    assertEq(page[1].id, 3);
-    assertEq(page[0].title, _label(2));
+    assertEq(page[0].id, 1, "the offset IS the id: position 0 of the window holds campaign `offset`");
+    assertEq(page[1].id, 2);
+    assertEq(page[0].title, _label(1));
   }
 
   function test_GetCampaigns_ClampsAtTheEnd() public {
@@ -811,7 +826,7 @@ contract CrowdfundTest is Test {
     ICrowdfund.Campaign[] memory page = crowdfund.getCampaigns(2, 100);
 
     assertEq(page.length, 1, "the window must be clipped, not padded");
-    assertEq(page[0].id, 3);
+    assertEq(page[0].id, 2, "the last campaign of three is id 2, not id 3");
   }
 
   function test_GetCampaigns_ZeroLimitReturnsEmpty() public {
@@ -920,8 +935,8 @@ contract CrowdfundTest is Test {
     assertEq(page.length, expectedLength);
 
     for (uint256 i = 0; i < page.length; i++) {
-      assertEq(page[i].id, offset + i + 1, "position n holds campaign id n + 1");
-      assertEq(page[i].title, crowdfund.getCampaign(offset + i + 1).title);
+      assertEq(page[i].id, offset + i, "position n of the window holds campaign id offset + n");
+      assertEq(page[i].title, crowdfund.getCampaign(offset + i).title);
     }
   }
 
@@ -962,10 +977,11 @@ contract CrowdfundTest is Test {
     vm.warp(uint256(crowdfund.getCampaign(id).deadline));
   }
 
-  /// @dev Creates `count` campaigns titled `campaign 1`, `campaign 2`, ... with ids 1..count.
+  /// @dev Creates `count` campaigns titled `campaign 0`, `campaign 1`, ... with ids `0..count - 1`,
+  ///      so `_label(id)` is always the title of campaign `id`.
   function _fill(uint256 count) internal {
     vm.startPrank(alice);
-    for (uint256 i = 1; i <= count; i++) {
+    for (uint256 i = 0; i < count; i++) {
       crowdfund.createCampaign(_label(i), DEFAULT_GOAL, DEFAULT_DURATION);
     }
     vm.stopPrank();

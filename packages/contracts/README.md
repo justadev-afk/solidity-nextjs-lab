@@ -134,13 +134,13 @@ packages/contracts
 ├── src/03-crowdfund/
 │   ├── ICrowdfund.sol
 │   ├── README.md
-│   └── Crowdfund.sol                     # <-- exists but empty, YOU implement it
+│   └── Crowdfund.sol                     # <-- constants only, YOU implement the rest
 ├── test/01-coffee-tip-jar/
 │   └── CoffeeTipJar.t.sol                # full suite (31 tests), already there
 ├── test/02-todo-list/
 │   └── TodoList.t.sol                    # full suite (53 tests), already there
 ├── test/03-crowdfund/
-│   └── Crowdfund.t.sol                   # full suite (67 tests), already there
+│   └── Crowdfund.t.sol                   # full suite (68 tests), already there
 ├── script/01-coffee-tip-jar/
 │   └── DeployCoffeeTipJar.s.sol          # deployment, already there
 ├── script/02-todo-list/

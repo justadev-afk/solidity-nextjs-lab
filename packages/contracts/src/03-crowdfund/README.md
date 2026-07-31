@@ -17,13 +17,13 @@ allowed to touch which.
 
 ## Goal
 
-Write the implementation **yourself** until the 67 tests that are already written pass. The
+Write the implementation **yourself** until the 68 tests that are already written pass. The
 interface, the test suite, the deploy script, the ABI and the Next.js UI all exist already: the only
 missing piece is the contract.
 
 > **Important:** `forge build` and `forge test` **fail right now**, and that is the intended starting
-> point (red → green). The file already exists, but it is empty, so the compiler complains about
-> whatever you have not written yet: first
+> point (red → green). The file already exists, but it holds only its constants, so the compiler
+> complains about whatever you have not written yet: first
 > `Contract "Crowdfund" should be marked as abstract` (it does not implement the whole interface),
 > and then, as you make progress, things like `Member "FEE_BPS" not found` or
 > `Wrong argument count for function call`. The message keeps changing depending on what is missing;
@@ -144,14 +144,17 @@ Every rule has its own test in `test/03-crowdfund/Crowdfund.t.sol`.
 2. `createCampaign` reverts with `InvalidGoal()` when `goal == 0`.
 3. `createCampaign` reverts with `InvalidDuration(duration, MIN_DURATION, MAX_DURATION)` outside the
    range. **Both bounds are inclusive.**
-4. On the happy path, ids start at **1** and increase by one — **globally**, not per address. Every
+4. On the happy path, ids start at **0** and increase by one — **globally**, not per address. An id
+   is the campaign's position in the registry, so `id == index` and nothing needs a `+1`. Every
    campaign records `creator = msg.sender`, `deadline = block.timestamp + duration`, `pledged = 0`
    and `claimed = false`; the id is appended to `campaignsOf(msg.sender)`; and
    `CampaignCreated(id, msg.sender, title, goal, deadline)` is emitted. There is no per-address cap:
    one account may run any number of campaigns at once.
 5. `getCampaign`, `statusOf`, `contributionOf` and `backerCount` revert with `CampaignNotFound(id)`
-   for an id that was never handed out — `0` included, since ids start at 1. Every read is open to
-   everybody.
+   for an id that was never handed out: the valid interval is `0 ..= campaignCount() - 1`, so the
+   test is `id >= campaignCount()`, not `id > campaignCount()`. Watch the empty registry — id `0` is
+   a real campaign as soon as one exists, but out of range while the count is still 0. Every read is
+   open to everybody.
 6. `statusOf` is **derived, never stored**:
    - `block.timestamp < deadline` → `Active`, **even if the goal has already been met**;
    - otherwise `pledged >= goal` → `Successful`;
@@ -226,8 +229,9 @@ Every rule has its own test in `test/03-crowdfund/Crowdfund.t.sol`.
 
 ## Hints
 
-- Storage that is enough: a `Campaign[]` (with `id == index + 1`, so `getCampaign` is a bounds
-  check away), the nested contribution mapping, a `mapping(uint256 => uint256)` of backer counts,
+- Storage that is enough: a `Campaign[]` (with `id == index`, so `getCampaign` is a bounds check
+  away and `campaignCount()` is just its `length`), the nested contribution mapping, a
+  `mapping(uint256 => uint256)` of backer counts,
   and a `mapping(address => uint256[])` of ids per creator. `protocolFees` can be a
   `uint256 public` — the auto-generated getter already satisfies the interface.
 - Write **one** private helper that turns an id into a storage slot or reverts with
@@ -270,7 +274,7 @@ in `packages/contracts/README.md`.
 ```sh
 bun run setup               # once: bun install + forge-std v1.16.2
 bun run contracts:build     # compile
-bun run contracts:test:03   # only this exercise's 67 tests — the one to live in
+bun run contracts:test:03   # only this exercise's 68 tests — the one to live in
 bun run contracts:test      # the whole lab
 bun run contracts:fmt       # forge fmt (CI checks the formatting)
 ```
@@ -310,7 +314,7 @@ fails too — `forge script` compiles the entire project before it runs anything
 ## When you are done
 
 - [ ] `bun run contracts:build` compiles with no warnings.
-- [ ] `bun run contracts:test` passes 100% (67 tests).
+- [ ] `bun run contracts:test` passes 100% (68 tests).
 - [ ] `bun run contracts:fmt:check` has nothing to complain about.
 - [ ] `FOUNDRY_PROFILE=ci forge test --root packages/contracts` passes too (the 1000 fuzz runs CI
       uses; equivalent to `forge test --root packages/contracts --fuzz-runs 1000`).

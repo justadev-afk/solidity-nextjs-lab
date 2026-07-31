@@ -17,8 +17,9 @@ pragma solidity ^0.8.30;
 ///      read them as getters off the concrete `Crowdfund` type, exactly like exercises 01 and 02.
 ///
 ///      Two shapes are new compared to exercise 02. First, ids are **global**, not per address:
-///      there is one shared campaign registry, so campaign 1 is campaign 1 for everybody, and the
-///      per-caller namespacing lives one level deeper, in `contributionOf(id, contributor)`.
+///      there is one shared campaign registry, so campaign 0 is campaign 0 for everybody, and the
+///      per-caller namespacing lives one level deeper, in `contributionOf(id, contributor)`. An id
+///      is simply the campaign's position in the registry, from `0`, so nothing ever needs a `+1`.
 ///      Second, this contract holds **other people's money**: every function that moves ETH out of
 ///      it has to zero its own bookkeeping before it calls anything, because the receiver can call
 ///      straight back in.
@@ -42,7 +43,7 @@ interface ICrowdfund {
   /// @dev `creator`, `deadline` and `claimed` are declared next to each other on purpose: 20 + 8 +
   ///      1 bytes fit in a single 32-byte storage slot.
   struct Campaign {
-    uint256 id; // global id, starts at 1 and is never reused
+    uint256 id; // global id, starts at 0 and is never reused; also its position in the registry
     address creator; // whoever called `createCampaign` (the only account that can claim)
     uint64 deadline; // unix seconds; the campaign is over once `block.timestamp >= deadline`
     bool claimed; // set by `claimFunds`, so a successful campaign can only pay out once
@@ -102,8 +103,11 @@ interface ICrowdfund {
   /// @param maxLength Maximum length in bytes allowed.
   error TitleTooLong(uint256 length, uint256 maxLength);
 
-  /// @notice Thrown when an id has never been handed out — `0`, or anything above
+  /// @notice Thrown when an id has never been handed out, i.e. anything at or above
   ///         `campaignCount()`.
+  /// @dev Ids are 0-based, so there is no "too small" case and `0` is a real campaign as soon as
+  ///      one exists — but it is still out of range on an empty registry, where the valid interval
+  ///      `0 ..= campaignCount() - 1` is empty.
   /// @param id Id that was not found.
   error CampaignNotFound(uint256 id);
 
@@ -159,8 +163,9 @@ interface ICrowdfund {
   function protocolFees() external view returns (uint256);
 
   /// @notice How many campaigns have ever been created.
-  /// @dev Ids are global and dense: the valid range is always `1 ..= campaignCount()`. Nothing is
-  ///      ever removed from the registry, so this never goes down.
+  /// @dev Ids are global, 0-based and dense: the valid range is always `0 ..= campaignCount() - 1`,
+  ///      empty while the count is 0. This is a total, not the last id. Nothing is ever removed
+  ///      from the registry, so it never goes down.
   /// @return The number of campaigns in the registry.
   function campaignCount() external view returns (uint256);
 
@@ -174,7 +179,8 @@ interface ICrowdfund {
   /// @dev Never reverts — unlike `ITodoList.getTasksPaged`, an out-of-range window simply comes
   ///      back empty. Returns fewer than `limit` items when the window runs past the end, and an
   ///      empty array when `limit` is 0 or `offset >= campaignCount()`.
-  /// @param offset Zero-based position to start from (position 0 is campaign id 1).
+  /// @param offset Position to start from. Since ids are 0-based this **is** an id: the window
+  ///        starts at campaign `offset`, and position `n` of the result holds campaign `offset + n`.
   /// @param limit Maximum number of campaigns to return.
   /// @return The requested slice of the registry.
   function getCampaigns(uint256 offset, uint256 limit) external view returns (Campaign[] memory);

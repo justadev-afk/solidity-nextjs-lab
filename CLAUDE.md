@@ -22,7 +22,7 @@ This repo is a practice lab. The whole point is that **the user** implements the
   first.
   - `01-coffee-tip-jar/CoffeeTipJar.sol` — **implemented by the user**, its 31 tests pass.
   - `02-todo-list/TodoList.sol` — **implemented by the user**, its 53 tests pass.
-  - `03-crowdfund/Crowdfund.sol` — **still the skeleton** (constants only), 67 tests waiting.
+  - `03-crowdfund/Crowdfund.sol` — **being written by the user right now**, 68 tests.
 - `forge build` / `forge test` **failing is the correct starting state**, not a bug to fix. The error
   moves as the user progresses: `Contract Crowdfund should be marked as abstract` while the interface
   is unimplemented, then things like `Member "FEE_BPS" not found` or
@@ -67,7 +67,7 @@ append-only campaign registry with **global** ids, a derived `Status` enum (`Act
 / `Failed`, computed from `block.timestamp`, `pledged` and `goal` — never stored), a nested
 `mapping(uint256 => mapping(address => uint256))` ledger, five events, thirteen custom errors, ETH
 in via `payable` and out via low-level `call`, full refunds on failure, a 2% protocol fee accrued to
-the deployer on success, and a `getCampaigns` window that clamps instead of reverting. 67 tests in
+the deployer on success, and a `getCampaigns` window that clamps instead of reverting. 68 tests in
 `test/03-crowdfund/Crowdfund.t.sol`. **Skeleton only — the user is writing it.**
 
 ## 2. Tech stack
