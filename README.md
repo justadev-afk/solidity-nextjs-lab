@@ -542,6 +542,7 @@ Anvil mines instantly (the default behaviour). If you want to see _pending_ stat
 | `contracts:deps`       | `forge install --root packages/contracts foundry-rs/forge-std@v1.16.2`.                                                            |
 | `contracts:build`      | `forge build --root packages/contracts`.                                                                                           |
 | `contracts:test`       | `forge test --root packages/contracts -vvv`.                                                                                       |
+| `contracts:test:NN`    | The same, narrowed to one exercise with `--match-path "test/NN-slug/*"`. One per exercise: `:01`, `:02`, `:03`.                    |
 | `contracts:test:watch` | `forge test --root packages/contracts --watch`. Re-runs on save.                                                                   |
 | `contracts:coverage`   | `forge coverage --root packages/contracts`.                                                                                        |
 | `contracts:fmt`        | `forge fmt --root packages/contracts`. `forge fmt` is the authority on Solidity, not Prettier.                                     |

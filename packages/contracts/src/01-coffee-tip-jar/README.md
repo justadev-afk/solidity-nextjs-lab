@@ -172,7 +172,8 @@ in `packages/contracts/README.md`.
 ```sh
 bun run setup               # once: bun install + forge-std v1.16.2
 bun run contracts:build     # compile
-bun run contracts:test      # forge test -vvv
+bun run contracts:test:01   # only this exercise's 31 tests — the one to live in
+bun run contracts:test      # the whole lab
 bun run contracts:fmt       # forge fmt (CI checks the formatting)
 ```
 

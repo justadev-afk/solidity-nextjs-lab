@@ -93,7 +93,7 @@ For slug `NN-my-exercise` and contract `MyExercise`:
 | 8   | Address registry            | `packages/abi/src/deployments.ts`                                 | Claude                 |
 | 9   | ABI sync target             | `scripts/sync-abi.ts`                                             | Claude                 |
 | 10  | Deployment sync target      | `scripts/sync-deployments.ts`                                     | Claude                 |
-| 11  | Deploy script entry         | `package.json` (`contracts:deploy:NN`)                            | Claude                 |
+| 11  | Script entries              | `package.json` (`contracts:test:NN` + `contracts:deploy:NN`)      | Claude                 |
 | 12  | Address override            | `apps/web/src/lib/env.ts` + `.env.example`                        | Claude                 |
 | 13  | Revert copy                 | `apps/web/src/lib/errors.ts`                                      | Claude                 |
 | 14  | Route                       | `apps/web/src/app/exercises/NN-my-exercise/page.tsx`              | Claude                 |
@@ -137,7 +137,8 @@ Written in English, in this order:
 6. **Behavioural rules**, numbered. Every rule maps to at least one test.
 7. **Concepts you will practise** — the actual reason the exercise exists.
 8. **Hints** — nudges towards the shape of the solution, never the solution.
-9. **Commands**, including the per-exercise deploy script and single-test iteration.
+9. **Commands**, leading with `contracts:test:NN` (the one the user lives in), then the per-exercise
+   deploy script and single-test iteration.
 10. **When you are done** — a checklist ending in "you can explain X in one sentence".
 11. **Optional challenges** — extensions that require touching the interface, the ABI and the UI.
 
@@ -256,17 +257,28 @@ fs.writeFileSync(process.argv[2], [
 
 ### 5.3 `package.json`
 
-One script per exercise, plus the aggregate:
+**Two** scripts per exercise, plus the deploy aggregate:
 
 ```json
+"contracts:test:NN": "forge test --root packages/contracts --match-path \"test/NN-my-exercise/*\" -vvv",
 "contracts:deploy": "bun run contracts:deploy:01 && bun run contracts:deploy:02 && bun run contracts:deploy:03",
 "contracts:deploy:NN": "forge script --root packages/contracts packages/contracts/script/NN-my-exercise/DeployMyExercise.s.sol:DeployMyExercise --rpc-url anvil --broadcast && bun run sync"
 ```
 
+`contracts:test:NN` is what the user actually lives in while implementing: the full suite gets long
+and noisy once the lab has several exercises, and only one of them is being written at a time. The
+`--match-path` glob is relative to `--root`, so it starts at `test/`, not at
+`packages/contracts/test/`. There is deliberately **no** `contracts:test` aggregate to update —
+plain `contracts:test` already runs everything.
+
+Note what it does _not_ buy you: `forge` compiles the whole project before running anything, so
+`contracts:test:01` is still red while any other exercise is an unimplemented skeleton. It narrows
+what runs, not what compiles.
+
 `forge script` resolves the script path against the **working directory**, not `--root`, which is
-why the full path is repeated. Add the new script to `contracts:deploy`, and mirror both into the
-command tables in `README.md` and `CLAUDE.md` — those tables are meant to match `package.json`
-exactly.
+why the full path is repeated. Add the new deploy script to `contracts:deploy`, and mirror
+everything into the command tables in `README.md`, `packages/contracts/README.md` and `CLAUDE.md` —
+those tables are meant to match `package.json` exactly.
 
 ### 5.4 Frontend
 

@@ -78,6 +78,8 @@ variables from the shell, and forces the `http://anvil:8545` indirection into ev
 - `bun run contracts:deps` — installs `forge-std` v1.16.2 as a submodule in `lib/forge-std`.
 - `bun run contracts:build` — `forge build`.
 - `bun run contracts:test` — `forge test -vvv`.
+- `bun run contracts:test:01` / `:02` / `:03` — the same, narrowed to one exercise with
+  `--match-path "test/NN-slug/*"`. There is one per exercise; use the one you are working on.
 - `bun run contracts:test:watch` — `forge test --watch`, re-runs on save.
 - `bun run contracts:coverage` — `forge coverage`.
 - `bun run contracts:fmt` — reformats all the Solidity with `forge fmt`.

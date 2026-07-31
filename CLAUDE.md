@@ -241,6 +241,9 @@ file must stay in sync with `package.json`.
 | `contracts:deps`       | `forge install --root packages/contracts foundry-rs/forge-std@v1.16.2`                                                                                                       |
 | `contracts:build`      | `forge build --root packages/contracts`                                                                                                                                      |
 | `contracts:test`       | `forge test --root packages/contracts -vvv`                                                                                                                                  |
+| `contracts:test:01`    | `forge test --root packages/contracts --match-path "test/01-coffee-tip-jar/*" -vvv` — only exercise 01                                                                       |
+| `contracts:test:02`    | `forge test --root packages/contracts --match-path "test/02-todo-list/*" -vvv` — only exercise 02                                                                            |
+| `contracts:test:03`    | `forge test --root packages/contracts --match-path "test/03-crowdfund/*" -vvv` — only exercise 03                                                                            |
 | `contracts:test:watch` | `forge test --root packages/contracts --watch`                                                                                                                               |
 | `contracts:coverage`   | `forge coverage --root packages/contracts`                                                                                                                                   |
 | `contracts:fmt`        | `forge fmt --root packages/contracts`                                                                                                                                        |
@@ -352,6 +355,7 @@ For exercise `NN`, slug `NN-my-exercise`, contract `MyExercise`:
 | Client components                                | `apps/web/src/app/exercises/NN-my-exercise/_components/*.tsx`                  |
 | Data layer                                       | `apps/web/src/hooks/use-my-exercise.ts`                                        |
 | Registry entry                                   | `apps/web/src/lib/exercises.ts`                                                |
+| Test script entry                                | `contracts:test:NN` in `package.json`                                          |
 | Deploy script entry                              | `contracts:deploy:NN` in `package.json`, added to `contracts:deploy`           |
 | Address override                                 | `NEXT_PUBLIC_*_ADDRESS` in `apps/web/src/lib/env.ts` + `.env.example`          |
 | Revert copy                                      | one `case` per custom error in `apps/web/src/lib/errors.ts`                    |
@@ -366,7 +370,9 @@ Steps:
    implementation is complete.
 3. Write the Foundry test suite covering every behavioural rule, including fuzz tests and any
    attacker contracts. Add a top-of-file comment noting it will not compile until the user writes
-   the implementation.
+   the implementation. Add the matching `contracts:test:NN` script to `package.json`
+   (`forge test --root packages/contracts --match-path "test/NN-my-exercise/*" -vvv`), so the user
+   can iterate on this exercise alone instead of running the whole lab.
 4. Write the deploy script: `vm.envUint("PRIVATE_KEY")`, constructor args via `vm.envOr(...)`,
    `vm.startBroadcast(pk)` / `vm.stopBroadcast()`, `console2.log` the address.
 5. Create `MyExercise.sol` as a **skeleton only** — SPDX, `pragma`, the interface import, the
