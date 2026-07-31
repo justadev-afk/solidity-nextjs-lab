@@ -132,6 +132,10 @@ Reproduced verbatim from the user's original request:
   export PATH="$HOME/.config/.foundry/bin:$HOME/.nvm/versions/node/v22.16.0/bin:$PATH"
   ```
 
+- VS Code failing with `The terminal process failed to launch: … posix_openpt failed: Device not
+configured` while editing `*.sol` is **pty exhaustion caused by the `runtimeverification.simbolik`
+  extension**, not a shell or PATH problem. Full diagnosis, cleanup recipe and fix in
+  [`docs/vscode-pty-exhaustion.md`](docs/vscode-pty-exhaustion.md).
 - `forge-std v1.16.2` is a real git submodule at `packages/contracts/lib/forge-std`
   (`.gitmodules` + `packages/contracts/foundry.lock` pin rev `bf647bd6…`). Fresh clones need
   `git clone --recurse-submodules` or `git submodule update --init --recursive`.
@@ -304,8 +308,10 @@ cast chain-id --rpc-url http://127.0.0.1:8545
   specifier appears, add it to the `x402Specifiers` array.
 - `packages/abi` (`@lab/abi`) — hand-written/generated ABIs (`coffee-tip-jar.ts`, `todo-list.ts`,
   `crowdfund.ts`) and the `deployments` address registry. No build step; Next transpiles it via `transpilePackages`.
-- `docs/` — long-form procedures kept out of this file. Currently only
-  [`adding-an-exercise.md`](docs/adding-an-exercise.md), the canonical playbook for new exercises.
+- `docs/` — long-form procedures kept out of this file:
+  [`adding-an-exercise.md`](docs/adding-an-exercise.md), the canonical playbook for new exercises,
+  and [`vscode-pty-exhaustion.md`](docs/vscode-pty-exhaustion.md), the diagnosis of the editor's
+  "terminal process failed to launch" failure.
 - `packages/contracts` (`@lab/contracts`) — Foundry project. Has only `test`, `fmt` and `clean`
   scripts on purpose: no `build`/`lint`/`typecheck`, so `turbo run build` skips it.
 - `packages/eslint-config` (`@lab/eslint-config`) — flat configs, exports `./base` and `./next`. The
