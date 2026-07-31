@@ -11,14 +11,18 @@ This repo is a practice lab. The whole point is that **the user** implements the
 - **Never create, fill in, complete or "fix" `packages/contracts/src/**/<Exercise>.sol`** — the
   concrete implementation — unless the user explicitly asks for it in that same turn ("write it
   yourself", "give me the solution", "implement it for me").
-- Every `src/NN-slug/<Exercise>.sol` is pre-created as an **empty skeleton** — SPDX, `pragma`, the
-  interface import and an empty `contract Exercise is IExercise {}` body — so the user can fill it
-  in. Treat those files as **the user's working copies**: assume they are editing one right now.
-  Never read-modify-write, never reformat, never revert, never append "just the missing bit". If you
-  must touch one, ask first.
+- Every `src/NN-slug/<Exercise>.sol` is pre-created as a **skeleton** — SPDX, `pragma`, the interface
+  import, the exercise's `public constant`s (if it has any) and a `// your code here` marker in an
+  otherwise empty `contract Exercise is IExercise {}` body — so the user can fill in the logic. The
+  constants are **boilerplate, not practice**: their names, types and values are dictated by the
+  brief and asserted verbatim by the tests, so typing them out teaches nothing. Everything else —
+  state variables, the constructor, modifiers, every function body — is the user's. Treat those files
+  as **the user's working copies**: assume they are editing one right now. Never read-modify-write,
+  never reformat, never revert, never append "just the missing bit". If you must touch one, ask
+  first.
   - `01-coffee-tip-jar/CoffeeTipJar.sol` — **implemented by the user**, its 31 tests pass.
   - `02-todo-list/TodoList.sol` — **implemented by the user**, its 53 tests pass.
-  - `03-crowdfund/Crowdfund.sol` — **still the empty skeleton**, 67 tests waiting.
+  - `03-crowdfund/Crowdfund.sol` — **still the skeleton** (constants only), 67 tests waiting.
 - `forge build` / `forge test` **failing is the correct starting state**, not a bug to fix. The error
   moves as the user progresses: `Contract Crowdfund should be marked as abstract` while the interface
   is unimplemented, then things like `Member "FEE_BPS" not found` or
@@ -329,37 +333,40 @@ cast chain-id --rpc-url http://127.0.0.1:8545
 
 For exercise `NN`, slug `NN-my-exercise`, contract `MyExercise`:
 
-| What                                       | Path                                                                           |
-| ------------------------------------------ | ------------------------------------------------------------------------------ |
-| Interface (Claude writes)                  | `packages/contracts/src/NN-my-exercise/IMyExercise.sol`                        |
-| Brief in English (Claude writes)           | `packages/contracts/src/NN-my-exercise/README.md`                              |
-| Implementation (USER ONLY, empty skeleton) | `packages/contracts/src/NN-my-exercise/MyExercise.sol`                         |
-| Tests                                      | `packages/contracts/test/NN-my-exercise/MyExercise.t.sol`                      |
-| Deploy script                              | `packages/contracts/script/NN-my-exercise/DeployMyExercise.s.sol`              |
-| ABI module                                 | `packages/abi/src/my-exercise.ts` (re-export from `packages/abi/src/index.ts`) |
-| Address registry                           | new key in `deployments` in `packages/abi/src/deployments.ts`                  |
-| Route (server component)                   | `apps/web/src/app/exercises/NN-my-exercise/page.tsx`                           |
-| Client components                          | `apps/web/src/app/exercises/NN-my-exercise/_components/*.tsx`                  |
-| Data layer                                 | `apps/web/src/hooks/use-my-exercise.ts`                                        |
-| Registry entry                             | `apps/web/src/lib/exercises.ts`                                                |
-| Deploy script entry                        | `contracts:deploy:NN` in `package.json`, added to `contracts:deploy`           |
-| Address override                           | `NEXT_PUBLIC_*_ADDRESS` in `apps/web/src/lib/env.ts` + `.env.example`          |
-| Revert copy                                | one `case` per custom error in `apps/web/src/lib/errors.ts`                    |
+| What                                             | Path                                                                           |
+| ------------------------------------------------ | ------------------------------------------------------------------------------ |
+| Interface (Claude writes)                        | `packages/contracts/src/NN-my-exercise/IMyExercise.sol`                        |
+| Brief in English (Claude writes)                 | `packages/contracts/src/NN-my-exercise/README.md`                              |
+| Implementation (USER ONLY, skeleton + constants) | `packages/contracts/src/NN-my-exercise/MyExercise.sol`                         |
+| Tests                                            | `packages/contracts/test/NN-my-exercise/MyExercise.t.sol`                      |
+| Deploy script                                    | `packages/contracts/script/NN-my-exercise/DeployMyExercise.s.sol`              |
+| ABI module                                       | `packages/abi/src/my-exercise.ts` (re-export from `packages/abi/src/index.ts`) |
+| Address registry                                 | new key in `deployments` in `packages/abi/src/deployments.ts`                  |
+| Route (server component)                         | `apps/web/src/app/exercises/NN-my-exercise/page.tsx`                           |
+| Client components                                | `apps/web/src/app/exercises/NN-my-exercise/_components/*.tsx`                  |
+| Data layer                                       | `apps/web/src/hooks/use-my-exercise.ts`                                        |
+| Registry entry                                   | `apps/web/src/lib/exercises.ts`                                                |
+| Deploy script entry                              | `contracts:deploy:NN` in `package.json`, added to `contracts:deploy`           |
+| Address override                                 | `NEXT_PUBLIC_*_ADDRESS` in `apps/web/src/lib/env.ts` + `.env.example`          |
+| Revert copy                                      | one `case` per custom error in `apps/web/src/lib/errors.ts`                    |
 
 Steps:
 
 1. Write the interface with full NatSpec (`@title`, `@notice`, `@dev`, `@param`, `@return`), SPDX
    MIT, `pragma solidity ^0.8.30;`.
-2. Write the brief in English: goal, the file (which already exists, empty), the interface,
-   behavioural rules, constants, concepts to learn, commands, and a "when you are done" checklist.
-   State explicitly that `forge build`/`forge test` fail until the implementation is complete.
+2. Write the brief in English: goal, the file (which already exists, with its constants already in
+   place), the interface, behavioural rules, constants, concepts to learn, commands, and a "when you
+   are done" checklist. State explicitly that `forge build`/`forge test` fail until the
+   implementation is complete.
 3. Write the Foundry test suite covering every behavioural rule, including fuzz tests and any
    attacker contracts. Add a top-of-file comment noting it will not compile until the user writes
    the implementation.
 4. Write the deploy script: `vm.envUint("PRIVATE_KEY")`, constructor args via `vm.envOr(...)`,
    `vm.startBroadcast(pk)` / `vm.stopBroadcast()`, `console2.log` the address.
-5. Create `MyExercise.sol` as an **empty skeleton only** — SPDX, `pragma`, the interface import and
-   `contract MyExercise is IMyExercise {}` — and **stop**. The user writes the body.
+5. Create `MyExercise.sol` as a **skeleton only** — SPDX, `pragma`, the interface import, the
+   exercise's `public constant`s exactly as the brief and the tests spell them, and a
+   `// your code here` marker — and **stop**. The constants are boilerplate; everything else (state,
+   constructor, functions) is the user's.
 6. Add an entry to the `targets` table in `scripts/sync-abi.ts` (`artifact`, `out`, `exportName`,
    `typeName`) and to the `targets` table in `scripts/sync-deployments.ts` (`contractName`,
    `script`); add the matching `deployments` key. The chain ids read by the deployment sync
@@ -406,8 +413,9 @@ Rules:
   deploy script, `@lab/abi`, `scripts/`, `package.json`, frontend, `README.md`, `CLAUDE.md`,
   `docs/` — lands together. Do not split it into "contracts" and "frontend" commits.
 - **Nothing else in it.** No unrelated refactor, no half-written implementation, and obviously not
-  the user's `<Exercise>.sol` beyond the empty skeleton. If a pre-existing bug has to be fixed to
-  make the scaffolding work, say so — it still goes in, but it gets named in the commit body.
+  the user's `<Exercise>.sol` beyond the skeleton and its constants. If a pre-existing bug has to be
+  fixed to make the scaffolding work, say so — it still goes in, but it gets named in the commit
+  body.
 - **Commit, never push.** Pushing needs its own explicit request; "commit this" is not one.
 - **Before committing**, the definition of done from
   [`docs/adding-an-exercise.md`](docs/adding-an-exercise.md) must pass: `forge fmt --check`,

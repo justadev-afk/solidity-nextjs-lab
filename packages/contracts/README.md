@@ -150,7 +150,7 @@ packages/contracts
 Convention: one `NN-slug` folder per exercise, with the same name under `src/`, `test/` and
 `script/`. Adding one follows [`docs/adding-an-exercise.md`](../../docs/adding-an-exercise.md).
 
-`forge` compiles the whole project, so while any exercise is still an empty skeleton, `forge build`,
+`forge` compiles the whole project, so while any exercise is still a skeleton, `forge build`,
 `forge test` and `forge script` are red for **every** exercise — including the ones already
 finished. That is the lab's normal state, not a broken checkout.
 

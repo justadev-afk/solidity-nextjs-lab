@@ -35,8 +35,10 @@ missing piece is the contract.
 packages/contracts/src/03-crowdfund/Crowdfund.sol
 ```
 
-**It already exists**: it was created empty on purpose so that all you have to do is implement it.
-This is the content it starts out with:
+**It already exists**: it was created almost empty on purpose so that all you have to do is
+implement it. Only the constants come pre-written — their names, types and values are fixed by this
+brief and asserted verbatim by the first test, so copying them out would teach you nothing. This is
+the content it starts out with:
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -45,6 +47,12 @@ pragma solidity ^0.8.30;
 import {ICrowdfund} from "./ICrowdfund.sol";
 
 contract Crowdfund is ICrowdfund {
+  uint256 public constant FEE_BPS = 200; // 2%, in basis points
+  uint256 public constant BPS_DENOMINATOR = 10_000;
+  uint64 public constant MIN_DURATION = 1 hours;
+  uint64 public constant MAX_DURATION = 90 days;
+  uint256 public constant MAX_TITLE_LENGTH = 80;
+
   // your code here
 }
 ```
@@ -107,10 +115,11 @@ function claimRefund(uint256 id) external returns (uint256 amount);
 function withdrawProtocolFees() external returns (uint256 amount);
 ```
 
-### Required constants
+### Required constants — already written for you
 
-These go in your contract (not in the interface), public and constant, because the tests read them
-as getters (`crowdfund.FEE_BPS()`):
+They live in your contract, not in the interface: an interface cannot hold state variables, and the
+tests read them as getters (`crowdfund.FEE_BPS()`). They are already in `Crowdfund.sol`, so this
+block is here for reference — do not paste it a second time:
 
 ```solidity
 uint256 public constant FEE_BPS = 200; // 2%, in basis points

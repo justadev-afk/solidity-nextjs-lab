@@ -273,9 +273,11 @@ dependencies.
 `bun.lock` **is committed** (CI runs `bun install --frozen-lockfile`). `packages/contracts/lib` is
 the `forge-std` submodule and is not ignored either, same as `packages/contracts/foundry.lock`.
 
-Every implementation file is created up front as a **skeleton**: SPDX, `pragma`, the interface import
-and `contract Foo is IFoo {}`. Filling it in is the exercise. `CoffeeTipJar.sol` is already done;
-`TodoList.sol` is the empty one waiting for you.
+Every implementation file is created up front as a **skeleton**: SPDX, `pragma`, the interface
+import, the exercise's `public constant`s and `contract Foo is IFoo { … }` with nothing else in it.
+Filling in the body is the exercise; the constants come pre-written because the tests assert their
+names, types and values verbatim, so typing them out is transcription rather than practice.
+`CoffeeTipJar.sol` and `TodoList.sol` are already done; `Crowdfund.sol` is the one waiting for you.
 
 Because `forge` compiles the whole project, an unfinished skeleton makes `forge build`, `forge test`
 and `forge script` red for **every** exercise, including the ones that were green before. That is
@@ -638,8 +640,9 @@ The shape, for slug `NN-my-exercise` and contract `MyExercise`:
 | Tooling   | `contracts:deploy:NN` in `package.json`, added to `contracts:deploy`                                                                                                 |
 | Frontend  | `app/exercises/NN-my-exercise/{page.tsx,_components/*}`, `hooks/use-my-exercise.ts`, entries in `lib/exercises.ts`, `lib/env.ts`, `lib/errors.ts` and `.env.example` |
 
-`MyExercise.sol` is created as an **empty skeleton** and stays that way — writing it is the
-exercise. Entries with `status: "planned"` in `lib/exercises.ts` render as non-clickable cards;
+`MyExercise.sol` is created as a **skeleton carrying only the exercise's `public constant`s** and
+stays that way — writing the body is the exercise; the constants are boilerplate the tests assert
+verbatim, so nobody has to retype them. Entries with `status: "planned"` in `lib/exercises.ts` render as non-clickable cards;
 right now there are two: `04-erc20-token` and `05-nft-mint`.
 
 To close the loop: `bun run contracts:test`, `bun run contracts:deploy` (which already calls

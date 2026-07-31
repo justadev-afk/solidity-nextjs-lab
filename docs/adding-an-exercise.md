@@ -8,8 +8,8 @@ it should teach). Everything else in this document is the standing agreement —
 naming, verification and the definition of done. Nothing else needs to be specified up front.
 
 > **The one hard rule.** The user writes the implementation contract. Claude creates
-> `src/NN-slug/<Contract>.sol` as an **empty skeleton** and stops there. See
-> [The hard rule](#the-hard-rule).
+> `src/NN-slug/<Contract>.sol` as a **skeleton with the exercise's `public constant`s already in
+> place** and stops there. See [The hard rule](#the-hard-rule).
 
 ---
 
@@ -36,7 +36,8 @@ pedagogically and push the rest down.
 
 ## 1. The hard rule
 
-- **Never write, complete or "fix" `packages/contracts/src/NN-slug/<Contract>.sol`.** It ships as:
+- **Never write, complete or "fix" `packages/contracts/src/NN-slug/<Contract>.sol`.** It ships as
+  SPDX, pragma, the interface import, the exercise's `public constant`s and nothing else:
 
   ```solidity
   // SPDX-License-Identifier: MIT
@@ -45,12 +46,22 @@ pedagogically and push the rest down.
   import {IMyExercise} from "./IMyExercise.sol";
 
   contract MyExercise is IMyExercise {
+    uint256 public constant MAX_FOO = 32;
+    uint256 public constant MAX_BAR = 280;
+
     // your code here
   }
   ```
 
   and that is where Claude stops. Treat the file as the user's working copy from that moment on: no
   read-modify-write, no reformat, no "just the missing bit".
+
+- **The constants are the one exception, and only the constants.** Their names, types and values are
+  dictated by the brief and asserted verbatim by the first test in the suite, so retyping them is
+  transcription, not practice — that is boilerplate the user should never have to write. An exercise
+  with no constants ships with an empty body. Nothing else crosses the line: no state variables, no
+  `immutable`s, no constructor, no modifiers, no function stubs, not even reverting ones. Deciding
+  what storage the problem needs is a large part of the exercise.
 
 - **A failing `forge build` / `forge test` is the correct end state** of adding an exercise. The
   first error is `Contract <Contract> should be marked as abstract`, then it moves as the user makes
@@ -118,9 +129,11 @@ Written in English, in this order:
    the previous one. Name the single hard part.
 2. **Goal**, with the exact test count, and the red → green warning block (`forge build` and
    `forge test` fail right now, on purpose, and here is the error you will see first).
-3. **The file you need to fill in**, with its starting content quoted verbatim.
+3. **The file you need to fill in**, with its starting content quoted verbatim — constants included,
+   so what the brief shows is exactly what is on disk.
 4. **The interface you must implement**, condensed to a signature block.
-5. **Required constants** and **Constructor** (say "there is none" when there is none).
+5. **Required constants** — the same block again, flagged as **already written for you** so nobody
+   pastes it twice — and **Constructor** (say "there is none" when there is none).
 6. **Behavioural rules**, numbered. Every rule maps to at least one test.
 7. **Concepts you will practise** — the actual reason the exercise exists.
 8. **Hints** — nudges towards the shape of the solution, never the solution.
@@ -155,8 +168,12 @@ Written in English, in this order:
 
 ### 3.5 Skeleton — `src/NN-my-exercise/MyExercise.sol`
 
-SPDX, pragma, the interface import, `contract MyExercise is IMyExercise { // your code here }`.
-**Stop.**
+SPDX, pragma, the interface import, then `contract MyExercise is IMyExercise { … }` holding the
+exercise's `public constant`s — copied character for character from the brief's **Required
+constants** block, in the same order — followed by a blank line and `// your code here`. **Stop.**
+
+The skeleton still does not implement the interface, so `Contract "MyExercise" should be marked as
+abstract` is unchanged as the first error the user sees.
 
 ---
 
@@ -347,6 +364,8 @@ printf '%s\n' \
   'import {IMyExercise} from "./IMyExercise.sol";' \
   '' \
   'contract MyExercise is IMyExercise {' \
+  '  uint256 public constant MAX_FOO = 32;' \
+  '' \
   '  // your code here' \
   '}' > "$SKELETON"
 
@@ -368,7 +387,8 @@ then commit. Tell them explicitly that their in-progress lines stayed uncommitte
 When the exercise is ready, tell the user:
 
 - where the brief and the interface live;
-- the file they have to write, and that it exists and is empty;
+- the file they have to write, that it exists, and that its `public constant`s are already in it —
+  the body below them is theirs;
 - the number of tests waiting for them;
 - that the whole Foundry project is red until they implement it — including exercises that were
   green before;
@@ -386,7 +406,9 @@ When the exercise is ready, tell the user:
 - **`contracts:fmt` rewrites the user's in-progress contract.** Use `contracts:fmt:check` while they
   are mid-edit.
 - **Node 22 is required** (`nvm use`) for anything Node-based; the host default is v16.
-- **Interfaces cannot declare constants.** Getters like `MAX_FOO()` live on the concrete contract.
+- **Interfaces cannot declare constants.** Getters like `MAX_FOO()` live on the concrete contract —
+  which is why they are the one thing the skeleton ships with, and why the hand-written ABI (lifted
+  from the interface artifact) lacks them until `abi:sync` regenerates it from the real build.
 - **Struct field names must survive into the ABI** or viem returns positional tuples and the
   `parseX` guards break. Name every struct member and every event parameter.
 - **`deployments:sync` merges chain ids**, so a local deploy never wipes a Sepolia address. Keep it
