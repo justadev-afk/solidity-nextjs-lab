@@ -16,8 +16,7 @@ contract Crowdfund is ICrowdfund {
   Campaign[] private _campaignList;
   mapping(address => uint256[]) private _userCampaigns;
   mapping(uint256 => mapping(address => uint256)) private _campaignPledges;
-  mapping(uint256 => address[]) private _campaignContributors;
-  mapping(uint256 => mapping(address => bool)) private _isContributor;
+  mapping(uint256 => uint256) private _campaignContributors;
 
   constructor() {
     _owner = msg.sender;
@@ -35,14 +34,17 @@ contract Crowdfund is ICrowdfund {
     return _ownerFees;
   }
 
+  /// @inheritdoc ICrowdfund
   function campaignCount() external view returns (uint256) {
     return _campaignList.length;
   }
 
+  /// @inheritdoc ICrowdfund
   function getCampaign(uint256 id) external view campaignMustExists(id) returns (Campaign memory) {
     return _campaignList[id];
   }
 
+  /// @inheritdoc ICrowdfund
   function getCampaigns(uint256 offset, uint256 limit) external view returns (Campaign[] memory response) {
     uint256 count = _campaignList.length;
 
@@ -66,26 +68,29 @@ contract Crowdfund is ICrowdfund {
     }
   }
 
+  /// @inheritdoc ICrowdfund
   function campaignsOf(address creator) external view returns (uint256[] memory) {
     return _userCampaigns[creator];
   }
 
+  /// @inheritdoc ICrowdfund
   function statusOf(uint256 id) external view campaignMustExists(id) returns (Status) {
-    Campaign memory campaign = _campaignList[id];
-
-    return _calculateCampaignStatus(campaign);
+    return _calculateCampaignStatus(_campaignList[id]);
   }
 
+  /// @inheritdoc ICrowdfund
   function contributionOf(uint256 id, address contributor) external view campaignMustExists(id) returns (uint256) {
     return _campaignPledges[id][contributor];
   }
 
+  /// @inheritdoc ICrowdfund
   function backerCount(uint256 id) external view campaignMustExists(id) returns (uint256) {
-    return _campaignContributors[id].length;
+    return _campaignContributors[id];
   }
 
+  /// @inheritdoc ICrowdfund
   function createCampaign(string calldata title, uint256 goal, uint64 duration) external returns (uint256 id) {
-    if (duration == 0 || duration > MAX_DURATION || duration < MIN_DURATION) {
+    if (duration > MAX_DURATION || duration < MIN_DURATION) {
       revert InvalidDuration(duration, MIN_DURATION, MAX_DURATION);
     }
 
@@ -103,11 +108,12 @@ contract Crowdfund is ICrowdfund {
     }
 
     address creator = msg.sender;
+    uint64 currentTime = uint64(block.timestamp);
 
     Campaign memory campaign = Campaign({
       id: _campaignList.length,
       creator: creator,
-      deadline: uint64(block.timestamp + duration),
+      deadline: currentTime + duration,
       claimed: false,
       title: title,
       goal: goal,
@@ -122,6 +128,7 @@ contract Crowdfund is ICrowdfund {
     return campaign.id;
   }
 
+  /// @inheritdoc ICrowdfund
   function contribute(uint256 id) external payable {
     if (msg.value == 0) {
       revert ZeroContribution();
@@ -131,21 +138,23 @@ contract Crowdfund is ICrowdfund {
     Campaign storage campaign = _getActiveCampaign(id);
     campaign.pledged += msg.value;
 
+    bool isContributor = _campaignPledges[id][contributor] > 0;
     _campaignPledges[id][contributor] += msg.value;
 
-    if (!_isContributor[id][contributor]) {
-      _isContributor[id][contributor] = true;
-      _campaignContributors[campaign.id].push(contributor);
+    if (!isContributor) {
+      _campaignContributors[id]++;
     }
 
-    emit ContributionMade(id, msg.sender, msg.value, campaign.pledged);
+    emit ContributionMade(id, contributor, msg.value, campaign.pledged);
   }
 
+  /// @inheritdoc ICrowdfund
   function claimFunds(uint256 id) external returns (uint256 payout) {
     Campaign storage campaign = _getSuccessfulCampaign(id);
+    address contributor = msg.sender;
 
-    if (campaign.creator != msg.sender) {
-      revert NotCampaignCreator(id, msg.sender, campaign.creator);
+    if (campaign.creator != contributor) {
+      revert NotCampaignCreator(id, contributor, campaign.creator);
     }
 
     if (campaign.claimed) {
@@ -166,27 +175,28 @@ contract Crowdfund is ICrowdfund {
     emit FundsClaimed(id, campaign.creator, payout, fee);
   }
 
+  /// @inheritdoc ICrowdfund
   function claimRefund(uint256 id) external returns (uint256 amount) {
     _getFailedCampaign(id);
 
     address contributor = msg.sender;
 
     amount = _campaignPledges[id][contributor];
-    if (!_isContributor[id][contributor] || amount == 0) {
+    if (amount == 0) {
       revert NothingToRefund(id, contributor);
     }
 
+    _campaignPledges[id][contributor] = 0;
     (bool success,) = contributor.call{value: amount}("");
 
     if (!success) {
       revert TransferFailed(contributor, amount);
     }
 
-    _campaignPledges[id][contributor] = 0;
-
     emit RefundIssued(id, contributor, amount);
   }
 
+  /// @inheritdoc ICrowdfund
   function withdrawProtocolFees() external returns (uint256 amount) {
     if (msg.sender != _owner) {
       revert NotProtocolOwner(msg.sender, _owner);
@@ -195,10 +205,11 @@ contract Crowdfund is ICrowdfund {
     if (_ownerFees == 0) {
       revert NoFeesToWithdraw();
     }
-    amount = _ownerFees;
 
-    (bool success,) = _owner.call{value: _ownerFees}("");
+    amount = _ownerFees;
     _ownerFees = 0;
+
+    (bool success,) = _owner.call{value: amount}("");
 
     if (!success) {
       revert TransferFailed(_owner, amount);
@@ -208,7 +219,7 @@ contract Crowdfund is ICrowdfund {
   }
 
   // Helpers
-  function _calculateCampaignStatus(Campaign memory campaign) private view returns (Status) {
+  function _calculateCampaignStatus(Campaign storage campaign) private view returns (Status) {
     if (block.timestamp < campaign.deadline) {
       return Status.Active;
     }
